@@ -4,7 +4,7 @@ Aquarium Controller
 A simple, Arduino based freshwater aquarium controller.
 
 Version: Alpha 4
-Author: Chris Lüscher (mail@christophluescher.ch)
+Author: Chris Lüscher
 Current features:
 - Measure: pH, O2, temperature
 - Report: pH, O2, temperature, internal time, critical measurement values + critical value changes
