@@ -7,7 +7,7 @@ Version: Alpha 4
 Author: Chris Lüscher
 Current features:
 - Measure: pH, O2, temperature
-- Report: pH, O2, temperature, internal time, critical measurement values + critical value changes
+- Report: pH, O2, temperature, internal time
 - Fertilize: 3 fertilizer pumps
 - Control: 5 RC power switches
 

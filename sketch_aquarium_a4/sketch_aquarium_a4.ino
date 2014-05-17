@@ -5,8 +5,7 @@
 // Author: Chris Lüscher (mail@christophluescher.ch)
 // Current features:
 //   - Measure: pH, O2, temperature
-//   - Report: pH, O2, temperature, internal time, critical measurement values + 
-//     critical value changes
+//   - Report: pH, O2, temperature, internal time
 //   - Fertilize: 3 fertilizer pumps
 //   - Control: 5 RC power switches
 // Disclaimer: this is a personal project. Pumping stuff into your aquarium
