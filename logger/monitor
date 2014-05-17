@@ -1,0 +1,3 @@
+#!/bin/bash
+rm nohup.out
+nohup python monitor.py &

@@ -1,0 +1,8 @@
+#!/bin/bash
+scp ~/Dropbox/"Chris Privat"/Aquarium/Arduino/aquarium_controller/logger/monitor.py pi@192.168.192.54:~/monitor.py
+scp ~/Dropbox/"Chris Privat"/Aquarium/Arduino/aquarium_controller/logger/consolidate.py pi@192.168.192.54:~/consolidate.py
+scp ~/Dropbox/"Chris Privat"/Aquarium/Arduino/aquarium_controller/logger/generate.py pi@192.168.192.54:~/generate.py
+scp ~/Dropbox/"Chris Privat"/Aquarium/Arduino/aquarium_controller/logger/monitor pi@192.168.192.54:~/monitor
+#scp pi@192.168.192.15:~/temp.png ~/Dropbox/"Chris Privat"/Aquarium/Arduino/logger/temp.png
+#scp pi@192.168.192.15:~/pH.png ~/Dropbox/"Chris Privat"/Aquarium/Arduino/logger/pH.png
+#scp pi@192.168.192.15:~/oxygen.png ~/Dropbox/"Chris Privat"/Aquarium/Arduino/logger/oxygen.png
