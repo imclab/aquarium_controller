@@ -26,7 +26,7 @@ else:
         file.write('<li>' + 'Last time report by controller: ' + str(result[1]) + '</li>');   
     result = cursor.execute("SELECT * FROM config WHERE key=? LIMIT 1", ("status", )).fetchone()
     if not result is None:
-        file.write('<li>' + 'Last status report by controller: ' + str(result[1]) + ' at ' + time.strftime('%H:%M:%S', result[2]) + '</li>');
+        file.write('<li>' + 'Last status report by controller: ' + str(result[1]) + ' at ' + time.strftime('%H:%M:%S', time.localtime(result[2])) + '</li>');
 
 file.write('</ul>')
 file.write('<h2 style="font-family:Courier;color:#FFFFFF;">Last 24 Hours</h2>')
