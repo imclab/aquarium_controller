@@ -8,6 +8,7 @@
 //   - Report: pH, O2, temperature, internal time
 //   - Fertilize: 3 fertilizer pumps
 //   - Control: 5 RC power switches
+//   - Cooling: control one set of 12v pc case cooling fans
 // Disclaimer: this is a personal project. Pumping stuff into your aquarium
 // is DANGEROUS and so is controlling your aquarium hardware via RC switches.
 // Use this project as an inspiration only if you know what you are doing.
@@ -40,7 +41,7 @@ const float pumpCapacity = 1.127;
 // Volume to pump per day, in ml, 0.0 for don't pump
 const float pump1Volume = 12.0;
 const float pump2Volume = 12.0;  
-const float pump3Volume = 14.0;  
+const float pump3Volume = 0.0;  
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 8;
 const byte fertilizeStartMinute = 15;
@@ -48,6 +49,12 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *pump1 = AFMS.getMotor(1);
 Adafruit_DCMotor *pump2 = AFMS.getMotor(2);
 Adafruit_DCMotor *pump3 = AFMS.getMotor(3);
+
+// Cooling
+// Start cooling at a temperature higher than...
+// Stop at a temperature 0.2C lower than...
+const float coolingTrigger = 24.5;  
+Adafruit_DCMotor *coolingVents = AFMS.getMotor(4);
 
 //Real Time Clock
 RTC_DS1307 RTC;
@@ -213,6 +220,14 @@ void Output(){
   O2Serial.print(F("L1\r"));
   pHSerial.print(tempString);
   pHSerial.print(F("L1\r"));
+  
+  // cooling
+  coolingVents->setSpeed(255);
+  if(tempAverage >= coolingTrigger){
+    coolingVents->run(FORWARD);
+  }else if(tempAverage <= (coolingTrigger - 0.2)){
+    coolingVents->run(RELEASE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////              

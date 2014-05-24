@@ -6,10 +6,13 @@
 - Wenshing RF module connected according to data sheet, 23cm copper cable as antenna. Observe DIP switch positions in power outlets, compare with script (no modifications to power outlets needed, only DIP switch setting!)
 - RTC connected according to documentation, I used the „true“ SDA/SCL input of the Uno.
 - IMPORTANT: a FAT copper cable should be run from the GND connector between the M1 and M2 connectors of the motor shield into the aquarium water. This will help deviate alternate ground (ground loop) currents from the very sensitive Atlas Scientific probes. This took me weeks to discover.
+- Connect PC case cooling fans to M4 output of motor shield, mount fans on aquarium cover as appropriate (airflow: the fans should blow air into the hood/towards the water, not suck it out to prevent moisture damage). Only two cables need to be connected, the cable with the black marker (tachometer signal) can be clipped.
 - Connect 12 DC adaptor to Arduino
 - Connect USB cable to Arduino
 
 # Build
 I used a single-bottle wine cask for this Alpha setup, fixing the Arduino to the cask with screws, taping the breadboard next to it, drilling some holes for the BNC, temperature, ground, USB, power connecters and some large holes for the peristaltic pumps. The cask can (IMO) be closed after you’re done because the Arduino won’t produce much heat.
+
+See the images to get a rough idea of how I built this.
 
 I currently use a raspberry PI to pick up the serial output from the Arduino, do some simple statistics with Python scripts and some output in the form of a web page. 
