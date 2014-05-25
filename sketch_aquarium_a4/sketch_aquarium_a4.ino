@@ -19,15 +19,21 @@
 #include <Wire.h>
 #include <RTClib.h>
 #include <Time.h>
-// IMPORTANT: Adapt this in TimeAlarms.h for the script to work: #define dtNBR_ALARMS 14
-// this increases the number of alarms, see https://www.inkling.com/read/arduino-cookbook-michael-margolis-2nd/chapter-16/recipe-16-3
 #include <TimeAlarms.h>
 #include <Adafruit_MotorShield.h>
 
 // Switches
 #define RCLpin 7
 // Hour:minute times to switch on, for up to 5 switches
-// the times you set for unused switches don't matter
+// the time you set for unused switches does not matter
+// trying out a new approach now:
+// switches are not turned off/on by alarms, rather
+// the correct switch seting is checked every 60 seconds
+// and sent to every switch
+// so if any switch should "forget" its status, it should timely be 
+// brought back to "reason" like this
+// switches should not be used for time sensitive tasks (e.g. fertilizer pumps)
+const byte switchCheckInterval = 60;
 const byte switchOnHours[5] = {13, 13, 13, 10, 10};
 const byte switchOnMinutes[5] = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
@@ -126,46 +132,6 @@ void RCLtransmit(int nHighPulses, int nLowPulses) {
     delayMicroseconds( 350 * nLowPulses);
 }
 
-void switch1On(){
-  RCLswitch(0b100111000010);
-}
-
-void switch1Off(){
-  RCLswitch(0b100111000001);
-}
-
-void switch2On(){
-  RCLswitch(0b100110100010);
-}
-
-void switch2Off(){
-  RCLswitch(0b100110100001);
-}
-
-void switch3On(){
-  RCLswitch(0b100110010010);
-}
-
-void switch3Off(){
-  RCLswitch(0b100110010001);
-}
-
-void switch4On(){
-  RCLswitch(0b100110001010);
-}
-
-void switch4Off(){
-  RCLswitch(0b100110001001);
-}
-
-void switch5On(){
-  RCLswitch(0b100110000110);
-}
-
-void switch5Off(){
-  RCLswitch(0b100110000101);
-}
-
 ////////////////////////////////////////////////////////////////////////////////              
 // Daily fertilization run
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,8 +188,10 @@ void Output(){
   pHSerial.print(F("L1\r"));
   
   // cooling
-  coolingVents->setSpeed(255);
   if(tempAverage >= coolingTrigger){
+    float mySpeed = 150 + ((tempAverage - coolingTrigger) *  300);
+    if(mySpeed > 255) mySpeed = 255;
+    coolingVents->setSpeed(int(mySpeed));
     coolingVents->run(FORWARD);
   }else if(tempAverage <= (coolingTrigger - 0.2)){
     coolingVents->run(RELEASE);
@@ -281,40 +249,46 @@ void setSwitchState(byte nr){
   if(inTimeWindow(switchOnHours[nr-1], switchOnMinutes[nr-1], switchOffHours[nr-1], switchOffMinutes[nr-1])){
     switch (nr) {
     case 1:
-      switch1On();
+      RCLswitch(0b100111000010);
       break;
     case 2:
-      switch2On();
+      RCLswitch(0b100110100010);
       break;
     case 3:
-      switch3On();
+      RCLswitch(0b100110010010);
       break;
     case 4:
-      switch4On();
+      RCLswitch(0b100110001010);
       break;
     case 5:
-      switch5On();
+      RCLswitch(0b100110000110);
       break;
     }
   }else{
     switch (nr) {
     case 1:
-      switch1Off();
+      RCLswitch(0b100111000001);
       break;
     case 2:
-      switch2Off();
+      RCLswitch(0b100110100001);
       break;
     case 3:
-      switch3Off();
+      RCLswitch(0b100110010001);
       break;
     case 4:
-      switch4Off();
+      RCLswitch(0b100110001001);
       break;
     case 5:
-      switch5Off();
+      RCLswitch(0b100110000101);
       break;
     }
   }
+}
+
+void checkSwitches(){
+  for (int i = 1; i < 6; i++){
+    setSwitchState(i);
+  } 
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -331,20 +305,10 @@ void setup(){
   
   //Switches
   pinMode(RCLpin, OUTPUT);
-  Alarm.alarmRepeat(switchOnHours[0], switchOnMinutes[0], 0, switch1On);
-  Alarm.alarmRepeat(switchOffHours[0], switchOffMinutes[0], 0, switch1Off);
-  Alarm.alarmRepeat(switchOnHours[1], switchOnMinutes[1], 0, switch2On);
-  Alarm.alarmRepeat(switchOffHours[1], switchOffMinutes[1], 0, switch2Off);
-  Alarm.alarmRepeat(switchOnHours[2], switchOnMinutes[2], 0, switch3On);
-  Alarm.alarmRepeat(switchOffHours[2], switchOffMinutes[2], 0, switch3Off);
-  Alarm.alarmRepeat(switchOnHours[3], switchOnMinutes[3], 0, switch4On);
-  Alarm.alarmRepeat(switchOffHours[3], switchOffMinutes[3], 0, switch4Off);
-  Alarm.alarmRepeat(switchOnHours[4], switchOnMinutes[4], 0, switch5On);
-  Alarm.alarmRepeat(switchOffHours[4], switchOffMinutes[4], 0, switch5Off);
+    
+  checkSwitches();
   
-  for (int i = 1; i < 6; i++){
-    setSwitchState(i);
-  }
+  Alarm.timerRepeat(switchCheckInterval, checkSwitches); 
   
   // Fertilization
   AFMS.begin();

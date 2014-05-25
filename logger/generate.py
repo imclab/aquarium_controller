@@ -4,7 +4,7 @@
 import serial, time, sqlite3, datetime, pygal, os
 from tempfile import NamedTemporaryFile
 
-database = sqlite3.connect('Aquarium.db')
+database = sqlite3.connect('/home/pi/Aquarium.db')
 cursor = database.cursor()
 
 file = open('/var/www/index-new.html', 'w')
@@ -25,8 +25,10 @@ else:
     if not result is None:
         file.write('<li>' + 'Last time report by controller: ' + str(result[1]) + '</li>');   
     result = cursor.execute("SELECT * FROM config WHERE key=? LIMIT 1", ("status", )).fetchone()
+    # manual time zone correction for now, didn't find out how to run
+    # cron jobs at localtime on the pi
     if not result is None:
-        file.write('<li>' + 'Last status report by controller: ' + str(result[1]) + ' (' + time.strftime('%H:%M:%S', time.localtime(result[2])) + ')</li>');
+        file.write('<li>' + 'Last status report by controller: ' + str(result[1]) + ' (' + time.strftime('%H:%M:%S', time.localtime(result[2] + 60*60*2)) + ')</li>');
 
 file.write('</ul>')
 file.write('<h2 style="font-family:Courier;color:#FFFFFF;">Last 24 Hours</h2>')

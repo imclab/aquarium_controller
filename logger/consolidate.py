@@ -3,7 +3,7 @@
 
 import serial, time, sqlite3, datetime
 
-database = sqlite3.connect('Aquarium.db')
+database = sqlite3.connect('/home/pi/Aquarium.db')
 cursor = database.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS daily
              (date text, temp real, pH real, o2 real)''')

@@ -3,7 +3,7 @@
 
 import serial, time, datetime, sqlite3
 
-database = sqlite3.connect('Aquarium.db')
+database = sqlite3.connect('/home/pi/Aquarium.db')
 cursor = database.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS log
              (date text, time text, epoch real, temp real, pH real, o2 real)''')
@@ -31,7 +31,7 @@ while 1:
     if line[:2] == 'O2':
         o2 = line[3:]
         try:
-            database = sqlite3.connect('Aquarium.db')
+            database = sqlite3.connect('/home/pi/Aquarium.db')
             cursor = database.cursor()
             cursor.execute("INSERT INTO log VALUES (?,?,?,?,?,?)", (datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"), time.mktime(time.localtime()), temp, pH, o2))
             database.commit()
@@ -40,7 +40,7 @@ while 1:
             print inst
     if line[:2] == 'TI':
         try:
-            database = sqlite3.connect('Aquarium.db')
+            database = sqlite3.connect('/home/pi/Aquarium.db')
             cursor = database.cursor()
             cursor.execute("DELETE FROM config WHERE key=?", ("time", ))
             cursor.execute("INSERT INTO config VALUES (?,?,?)", ("time", line[3:], time.mktime(time.localtime())))
@@ -50,7 +50,7 @@ while 1:
             print inst
     if line[:2] == 'ST':
         try:
-            database = sqlite3.connect('Aquarium.db')
+            database = sqlite3.connect('/home/pi/Aquarium.db')
             cursor = database.cursor()
             cursor.execute("DELETE FROM config WHERE key=?", ("status", ))
             cursor.execute("INSERT INTO config VALUES (?,?,?)", ("status", line[3:], time.mktime(time.localtime())))
