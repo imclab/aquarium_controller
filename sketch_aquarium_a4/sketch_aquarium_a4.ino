@@ -5,11 +5,11 @@
 // Author: Chris Lüscher (mail@christophluescher.ch)
 // Current features:
 //   - Measure: pH, O2, temperature
-//   - Report: pH, O2, temperature, internal time
+//   - Report: pH, O2, temperature, internal time, Arduino RAM usage, fan speed
 //   - Fertilize: 3 fertilizer pumps
 //   - Control: 5 RC power switches
 //   - Cooling: control one set of 12v pc case cooling fans
-// Disclaimer: this is a personal project. Pumping stuff into your aquarium
+// DISCLAIMER: this is a personal project. Pumping stuff into your aquarium
 // is DANGEROUS and so is controlling your aquarium hardware via RC switches.
 // Use this project as an inspiration only if you know what you are doing.
 // I provide this information 'as is' without warranty of any kind.
@@ -21,9 +21,10 @@
 #include <Time.h>
 #include <TimeAlarms.h>
 #include <Adafruit_MotorShield.h>
+#include <avr/pgmspace.h>
 
 // Switches
-#define RCLpin 7
+const byte RCLpin=7;
 // Hour:minute times to switch on, for up to 5 switches
 // the time you set for unused switches does not matter
 // trying out a new approach now:
@@ -34,11 +35,11 @@
 // brought back to "reason" like this
 // switches should not be used for time sensitive tasks (e.g. fertilizer pumps)
 const byte switchCheckInterval = 60;
-const byte switchOnHours[5] = {13, 13, 13, 10, 10};
-const byte switchOnMinutes[5] = {15, 25, 00, 10, 10};
+const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 10};
+const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
-const byte switchOffHours[5] = {21, 21, 21, 10, 10};
-const byte switchOffMinutes[5] = {15, 25, 00, 10, 10};
+const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 10};
+const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 
 // Fertilizer Pumps
 // Pump capacity in ml/s, for now, we assume that every pump has the same capacity
@@ -59,19 +60,19 @@ Adafruit_DCMotor *pump3 = AFMS.getMotor(3);
 // Cooling
 // Start cooling at a temperature higher than...
 // Stop at a temperature 0.2C lower than...
-const float coolingTrigger = 24.5;  
+const float coolingTrigger = 23.7;  
 Adafruit_DCMotor *coolingVents = AFMS.getMotor(4);
 
 //Real Time Clock
 RTC_DS1307 RTC;
 
-// Output
+// Output & Update
 // for now I pick up this output via a raspberry pi
 // and do some reporting there
 const byte updateInterval = 10; //10 secs
 
 // temperature measurement
-const int temperaturePin = A0;
+const byte temperaturePin = A0;
 float tempAverage = 20.0;
 
 // Atlas Scientific Sensors
@@ -79,8 +80,8 @@ const byte sensorBufferSize = 15;
 
 // pH measurement
 // measurements are stored as int (original number * 100) to save memory
-#define pHRX 2
-#define pHTX 3
+const byte pHRX=2;
+const byte pHTX=3;
 int pH = 700;
 SoftwareSerial pHSerial(pHRX, pHTX);
 byte pHSensorLength = 0;
@@ -88,16 +89,12 @@ char pHSensor[sensorBufferSize+1];
 
 // O2 measurement
 // measurements are stored as int (original number * 100) to save memory
-#define O2RX 4
-#define O2TX 5
+const byte O2RX=4;
+const byte O2TX=5;
 int O2 = 800;
 SoftwareSerial O2Serial(O2RX, O2TX);
 byte O2SensorLength = 0;
 char O2Sensor[sensorBufferSize+1];
-
-// Helper stuff stored here to save RAM (?)
-char buffer[17];
-char tempString[10];
   
 ////////////////////////////////////////////////////////////////////////////////              
 // Used for synchronizing the Time library with the RTC
@@ -112,8 +109,8 @@ time_t syncProvider(){
 // https://code.google.com/p/rc-switch/
 ////////////////////////////////////////////////////////////////////////////////
 void RCLswitch(uint16_t code) {
-    for (int nRepeat=0; nRepeat<6; nRepeat++) {
-        for (int i=4; i<16; i++) {
+    for (byte nRepeat=0; nRepeat<6; nRepeat++) {
+        for (byte i=4; i<16; i++) {
             RCLtransmit(1,3);
             if (((code << (i-4)) & 2048) > 0) {
                 RCLtransmit(1,3);
@@ -136,7 +133,6 @@ void RCLtransmit(int nHighPulses, int nLowPulses) {
 // Daily fertilization run
 ////////////////////////////////////////////////////////////////////////////////
 void Fertilize(){
-  Serial.println(F("ST FERT START"));
   if(pump1Volume > 0.0){
      pump1->run(FORWARD);
      delay((int) (pump1Volume / pumpCapacity * 1000.0));
@@ -152,11 +148,11 @@ void Fertilize(){
      delay((int) (pump3Volume / pumpCapacity * 1000.0));
      pump3->run(RELEASE);
   }
-  Serial.println(F("ST FERT DONE"));
+  Serial.println(F("ST Fertilization done"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
-// Output to serial
+// Regular update: Output to serial, sensor calibration, fan speed
 ////////////////////////////////////////////////////////////////////////////////
 void SerialPrintDigits(byte digits){
   if(digits < 10)
@@ -164,33 +160,37 @@ void SerialPrintDigits(byte digits){
   Serial.print(digits, DEC);
 }
 
-void Output(){  
-  strcpy(tempString, dtostrf(tempAverage, -1, 1, buffer));
-
+void Update(){  
   Serial.print(F("TE "));
-  Serial.println(tempString);
+  Serial.println(tempAverage, 1);
   Serial.print(F("PH "));
-  Serial.println(dtostrf(float(pH/100.0), -1, 1, buffer));
+  Serial.println(float(pH/100.0), 1);
   Serial.print(F("O2 "));
-  Serial.println(dtostrf(float(O2/100.0), -1, 2, buffer));
+  Serial.println(float(O2/100.0), 2);
   Serial.print(F("TI "));
   SerialPrintDigits(RTC.now().hour());
   Serial.print(F(":"));
   SerialPrintDigits(RTC.now().minute());
   Serial.println();
+  Serial.print(F("ME "));
+  Serial.println(memoryFree());
   
-  tempString[2] = ',';
-  tempString[4] = '\r';  
-  tempString[5] = '\0';  
-  O2Serial.print(tempString); 
+  char buffer[10];
+  dtostrf(tempAverage, -1, 1, buffer);
+  buffer[2] = ',';
+  buffer[4] = '\r';  
+  buffer[5] = '\0';  
+  O2Serial.print(buffer); 
   O2Serial.print(F("L1\r"));
-  pHSerial.print(tempString);
+  pHSerial.print(buffer);
   pHSerial.print(F("L1\r"));
   
   // cooling
   if(tempAverage >= coolingTrigger){
     float mySpeed = 150 + ((tempAverage - coolingTrigger) *  300);
     if(mySpeed > 255) mySpeed = 255;
+    Serial.print(F("FA "));
+    Serial.println(int(mySpeed));
     coolingVents->setSpeed(int(mySpeed));
     coolingVents->run(FORWARD);
   }else if(tempAverage <= (coolingTrigger - 0.2)){
@@ -246,7 +246,7 @@ boolean inTimeWindow(byte onHour, byte onMinute, byte offHour, byte offMinute){
 // Sets the correct state for a switch (e.g. after a reboot)
 ///////////////////////////////////////////////////////////////////////////////
 void setSwitchState(byte nr){  
-  if(inTimeWindow(switchOnHours[nr-1], switchOnMinutes[nr-1], switchOffHours[nr-1], switchOffMinutes[nr-1])){
+  if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1]))){
     switch (nr) {
     case 1:
       RCLswitch(0b100111000010);
@@ -286,7 +286,7 @@ void setSwitchState(byte nr){
 }
 
 void checkSwitches(){
-  for (int i = 1; i < 6; i++){
+  for (byte i = 1; i < 6; i++){
     setSwitchState(i);
   } 
 }
@@ -325,8 +325,10 @@ void setup(){
   O2Serial.begin(38400);
   pHSerial.listen();
   
-  // Output
-  Alarm.timerRepeat(updateInterval, Output); 
+  // Update serial, sensor calibration, fan speed
+  Alarm.timerRepeat(updateInterval, Update); 
+  
+  Serial.println(F("ST Controller initialized"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -334,18 +336,37 @@ void setup(){
 // used for precise measurement with components that 
 // need a reference voltage
 ////////////////////////////////////////////////////////////////////////////////
-// long readVcc() {
-//   long result;
-//   // Read 1.1V reference against AVcc
-//    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-//   delay(2); // Wait for Vref to settle
-//   ADCSRA |= _BV(ADSC); // Convert
-//   while (bit_is_set(ADCSRA,ADSC));
-//   result = ADCL;
-//   result |= ADCH<<8;
-//   result = 1126400L / result; // Back-calculate AVcc in mV
-//   return result;
-// }
+long readVcc() {
+   long result;
+   // Read 1.1V reference against AVcc
+   ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+   delay(2); // Wait for Vref to settle
+   ADCSRA |= _BV(ADSC); // Convert
+   while (bit_is_set(ADCSRA,ADSC));
+   result = ADCL;
+   result |= ADCH<<8;
+   result = 1126400L / result; // Back-calculate AVcc in mV
+   return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////              
+// check free memory
+// https://www.inkling.com/read/arduino-cookbook-michael-margolis-2nd/chapter-17/recipe-17-2
+////////////////////////////////////////////////////////////////////////////////
+
+extern int __bss_end;
+extern void *__brkval;
+
+int memoryFree()
+{
+  int freeValue;  
+  if((int)__brkval == 0)
+     freeValue = ((int)&freeValue) - ((int)&__bss_end);
+  else
+    freeValue = ((int)&freeValue) - ((int)__brkval);
+
+  return freeValue;
+}
 
 ////////////////////////////////////////////////////////////////////////////////              
 // loop, runs continuously 
