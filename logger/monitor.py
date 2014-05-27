@@ -1,4 +1,5 @@
 # Writes measurement and status reports of the Arduino to an SQLite DB
+# I'm currently running this in /etc/rc.local: (sleep 10; python /home/pi/monitor.py)
 # This does the trick for now, but don't use it to learn Python
 
 import serial, time, datetime, sqlite3

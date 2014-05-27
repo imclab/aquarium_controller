@@ -1,4 +1,6 @@
 # Consolidats measurement data and deletes old data logs
+# Should be run by crontab once a day, e.g. after midnight
+# 0 5 * * * sudo python /home/pi/consolidate.py
 # This does the trick for now, but don't use it to learn Python
 
 import serial, time, sqlite3, datetime

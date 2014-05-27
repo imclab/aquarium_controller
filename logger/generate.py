@@ -1,4 +1,6 @@
 # Generates a data and status report to be delivered by a web server
+# Should be run via crontab, e.g. every 5 minutes
+# */5     *      *     *    *    sudo python /home/pi/generate.py 
 # This does the trick for now, but don't use it to learn Python
 
 import serial, time, sqlite3, datetime, pygal, os
@@ -17,13 +19,12 @@ result = cursor.execute("SELECT * FROM log ORDER BY epoch DESC LIMIT 1").fetchon
 if result is None:
     file.write('<li>No measurement.</li>');   
 else:
-    file.write('<li>' + 'Recorded on: ' + result[0] + ', ' + result[1] + '</li>');
     file.write('<li>' + 'Temperature: ' + str(result[3]) + 'C</li>');
     file.write('<li>' + 'pH: ' + str(result[4]) + '</li>');
     file.write('<li>' + 'Oxygen: ' + str(result[5]) + '</li>');
     result = cursor.execute("SELECT * FROM config WHERE key=? LIMIT 1", ("time", )).fetchone()
     if not result is None:
-        file.write('<li>' + 'Last time report by controller: ' + str(result[1]) + '</li>');   
+        file.write('<li>' + 'Time report by controller: ' + str(result[1]) + '</li>');   
     result = cursor.execute("SELECT * FROM config WHERE key=? LIMIT 1", ("status", )).fetchone()
     # manual time zone correction for now, didn't find out how to run
     # cron jobs at localtime on the pi
