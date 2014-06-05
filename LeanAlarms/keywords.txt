@@ -1,0 +1,5 @@
+TimerOnce KEYWORD1
+TimerRepeat KEYWORD1
+AlarmRepeat KEYWORD1
+set KEYWORD2
+check KEYWORD2
