@@ -5,10 +5,11 @@
 */
 
 #include "Arduino.h"
+#include <Wire.h>
+#include <RTClib.h>
 #include "LeanAlarms.h"
-#include "RTClib.h"
 
-RTC_DS1307 myRTC;
+RTC_DS1307 leanRTC;
 
 TimerOnce::TimerOnce(){
 	_active = false;
@@ -57,7 +58,7 @@ void AlarmRepeat::set(byte hour, byte minute, byte second, AlarmCallback_t callb
 	_minute = minute;
 	_second = second;
 	_callback = callback;
-    uint32_t time = myRTC.now().unixtime();
+    uint32_t time = leanRTC.now().unixtime();
 	// set the event for today
 	_next = previousMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	// did the event already pass for today? if so, set it for tomorrow
@@ -68,7 +69,7 @@ void AlarmRepeat::set(byte hour, byte minute, byte second, AlarmCallback_t callb
 
 void AlarmRepeat::check(){
     if(_next > 0){
-	  uint32_t time = myRTC.now().unixtime();
+	  uint32_t time = leanRTC.now().unixtime();
 	  if((time >= _next)){
     	_next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
         (*_callback)();
