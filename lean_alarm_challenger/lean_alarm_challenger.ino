@@ -1,10 +1,13 @@
-#include <Wire.h>         //needed for RTClib
-#include <RTClib.h>       //needed for LeanAlarms
-#include <LeanAlarms.h>
+#include <Wire.h>
+#include <RTClib.h>
+#include <Time.h>
+#include <TimeAlarms.h>
 
-TimerOnce onceTimer;
-TimerRepeat repeatTimer;
-AlarmRepeat repeatAlarm;
+RTC_DS1307 RTC;
+
+time_t syncProvider(){
+  return RTC.now().unixtime();
+}
 
 void onceTimerAction(){
   Serial.println("onceTimerAction called!");
@@ -32,18 +35,18 @@ int memoryFree()
   return freeValue;
 }
 
-void setup(){  
+void setup(){
   Wire.begin();
   Serial.begin(38400);
-  onceTimer.set(30000, onceTimerAction);
-  repeatTimer.set(10000, repeatTimerAction);
-  repeatAlarm.set(21, 15, 00, repeatAlarmAction);
+  setSyncProvider(syncProvider);
+  Alarm.timerOnce(30, onceTimerAction); 
+  Alarm.timerRepeat(10, repeatTimerAction); 
+  Alarm.alarmRepeat(21, 15, 00, repeatAlarmAction);
   Serial.println(memoryFree());
 }
 
-void loop(){ 
-  delay(1);
-  onceTimer.check();
-  repeatTimer.check();
-  repeatAlarm.check();
+void loop(){
+  Alarm.delay(1);
 }
+
+
