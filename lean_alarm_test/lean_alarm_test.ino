@@ -2,9 +2,10 @@
 #include <RTClib.h>       //needed for LeanAlarms
 #include <LeanAlarms.h>
 
-TimerOnce onceTimer;
-TimerRepeat repeatTimer;
-AlarmRepeat repeatAlarm;
+Timer onceTimer;
+Timer repeatTimer;
+Timer repeatTimer2;
+Alarm repeatAlarm;
 
 void onceTimerAction(){
   Serial.println("onceTimerAction called!");
@@ -12,6 +13,10 @@ void onceTimerAction(){
 
 void repeatTimerAction(){
   Serial.println("repeatTimerAction called!");
+}
+
+void repeatTimerAction2(){
+  Serial.println("repeatTimerAction2 called!");
 }
 
 void repeatAlarmAction(){
@@ -35,9 +40,10 @@ int memoryFree()
 void setup(){  
   Wire.begin();
   Serial.begin(38400);
-  onceTimer.set(30000, onceTimerAction);
-  repeatTimer.set(10000, repeatTimerAction);
-  repeatAlarm.set(21, 15, 00, repeatAlarmAction);
+  onceTimer.set(30000, onceTimerAction, false);
+  repeatTimer.set(10000, repeatTimerAction, true);
+  repeatTimer2.set(11000, repeatTimerAction2, true);
+  repeatAlarm.set(21, 15, 00, repeatAlarmAction, true);
   Serial.println(memoryFree());
 }
 
@@ -45,5 +51,6 @@ void loop(){
   delay(1);
   onceTimer.check();
   repeatTimer.check();
+  repeatTimer2.check();
   repeatAlarm.check();
 }

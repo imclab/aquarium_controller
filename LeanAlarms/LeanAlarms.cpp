@@ -11,49 +11,34 @@
 
 RTC_DS1307 leanRTC;
 
-TimerOnce::TimerOnce(){
+Timer::Timer(){
 	_active = false;
 }
 
-void TimerOnce::set(unsigned long duration, AlarmCallback_t callback){
+void Timer::set(unsigned long duration, AlarmCallback_t callback, boolean repeat){
 	_start = millis();
 	_duration = duration;
 	_callback = callback;
 	_active = true;
+	_repeat = repeat;
 }
 
-void TimerOnce::check(){
+void Timer::check(){
     if(_active && (millis() >= (_start + _duration))){
-      _active = false;
+	  if(_repeat){
+		_start = millis();	
+	  }else{
+        _active = false;
+  	  }
       (*_callback)();
     }
 }
 
-
-TimerRepeat::TimerRepeat(){
-	_active = false;
-}
-
-void TimerRepeat::set(unsigned long duration, AlarmCallback_t callback){
-	_start = millis();
-	_duration = duration;
-	_callback = callback;
-	_active = true;
-}
-
-void TimerRepeat::check(){
-    if(_active && (millis() >= (_start + _duration))){
-      _start = millis();
-      (*_callback)();
-    }
-}
-
-
-AlarmRepeat::AlarmRepeat(){
+Alarm::Alarm(){
 	_next = 0;
 }
 
-void AlarmRepeat::set(byte hour, byte minute, byte second, AlarmCallback_t callback){
+void Alarm::set(byte hour, byte minute, byte second, AlarmCallback_t callback, boolean repeat){
 	_hour = hour;
 	_minute = minute;
 	_second = second;
@@ -65,14 +50,19 @@ void AlarmRepeat::set(byte hour, byte minute, byte second, AlarmCallback_t callb
 	if(time >= _next){
 		_next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	}
+	_repeat = repeat;
 }
 
-void AlarmRepeat::check(){
+void Alarm::check(){
     if(_next > 0){
 	  uint32_t time = leanRTC.now().unixtime();
 	  if((time >= _next)){
-    	_next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+		if(_repeat){
+    	  _next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+	    }else{
+		  _next = 0;
+	    }
         (*_callback)();
-      }
-    }
+	  }
+   }
 }

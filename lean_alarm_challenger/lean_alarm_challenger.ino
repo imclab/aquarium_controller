@@ -17,6 +17,10 @@ void repeatTimerAction(){
   Serial.println("repeatTimerAction called!");
 }
 
+void repeatTimerAction2(){
+  Serial.println("repeatTimerAction2 called!");
+}
+
 void repeatAlarmAction(){
   Serial.println("repeatAlarmAction called!");
 }
@@ -41,6 +45,7 @@ void setup(){
   setSyncProvider(syncProvider);
   Alarm.timerOnce(30, onceTimerAction); 
   Alarm.timerRepeat(10, repeatTimerAction); 
+  Alarm.timerRepeat(11, repeatTimerAction2); 
   Alarm.alarmRepeat(21, 15, 00, repeatAlarmAction);
   Serial.println(memoryFree());
 }

@@ -18,40 +18,27 @@ typedef void (*AlarmCallback_t)();
 #define previousMidnight(_time_) (( _time_ / SECS_PER_DAY) * SECS_PER_DAY)  // time at the start of the given day
 #define nextMidnight(_time_) ( previousMidnight(_time_)  + SECS_PER_DAY )   // time at the end of the given day 
 
-// A timer that fires once after a certain duration given in milliseconds (!)
-class TimerOnce
+// A timer that fires after a certain duration given in milliseconds(!)
+class Timer
 {
   public:
-    TimerOnce();
-    void set(unsigned long duration, AlarmCallback_t callback);
+    Timer();
+    void set(unsigned long duration, AlarmCallback_t callback, boolean repeat);
     void check();
   private:
 	AlarmCallback_t _callback;
 	unsigned long _start;
 	unsigned long _duration;
 	boolean _active;
+	boolean _repeat;
 };
 
-// A timer that keeps firing after a certain duration given in milliseconds (!)
-class TimerRepeat
+// An alarm that fires at a certain time
+class Alarm
 {
   public:
-    TimerRepeat();
-    void set(unsigned long duration, AlarmCallback_t callback);
-    void check();
-  private:
-  	AlarmCallback_t _callback;
-  	unsigned long _start;
-  	unsigned long _duration;
-  	boolean _active;
-};
-
-// An alarm that keeps firing at a certain time every day
-class AlarmRepeat
-{
-  public:
-    AlarmRepeat();
-    void set(byte hour, byte minute, byte second, AlarmCallback_t callback);
+    Alarm();
+    void set(byte hour, byte minute, byte second, AlarmCallback_t callback, boolean repeat);
     void check();
   private:
 	AlarmCallback_t _callback;
@@ -59,6 +46,7 @@ class AlarmRepeat
 	byte _minute;
 	byte _second;
 	uint32_t _next;
+	boolean _repeat;
 };
 
 #endif
