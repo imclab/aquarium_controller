@@ -5,24 +5,42 @@
 
 RTC_DS1307 RTC;
 
+void SerialPrintDigits(byte digits){
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits, DEC);
+}
+
 time_t syncProvider(){
   return RTC.now().unixtime();
 }
 
 void onceTimerAction(){
-  Serial.println("onceTimerAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" onceTimerAction called!");
 }
 
 void repeatTimerAction(){
-  Serial.println("repeatTimerAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatTimerAction called!");
 }
 
 void repeatTimerAction2(){
-  Serial.println("repeatTimerAction2 called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatTimerAction2 called!");
 }
 
 void repeatAlarmAction(){
-  Serial.println("repeatAlarmAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatAlarmAction called!");
 }
 
 extern int __bss_end;

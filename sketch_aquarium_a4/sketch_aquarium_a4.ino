@@ -17,11 +17,10 @@
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
-#include <RTClib.h>
-#include <Time.h>
-#include <TimeAlarms.h>
+#include <LeanAlarms.h>
 #include <Adafruit_MotorShield.h>
 #include <avr/pgmspace.h>
+#include <RTClib.h>
 
 // Switches
 const byte RCLpin=7;
@@ -34,7 +33,7 @@ const byte RCLpin=7;
 // so if any switch should "forget" its status, it should timely be 
 // brought back to "reason" like this
 // switches should not be used for time sensitive tasks (e.g. fertilizer pumps)
-const byte switchCheckInterval = 60;
+const byte switchCheckInterval = 60000; // 60 secs
 const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 10};
 const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
@@ -42,16 +41,16 @@ const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 10};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 
 // Fertilizer Pumps
-// Pump capacity in ml/s, for now, we assume that every pump has the same capacity
-// Pump for one minute to measure pump speed (see helper script)
-const float pumpCapacity = 1.127;
-// Volume to pump per day, in ml, 0.0 for don't pump
-const float pump1Volume = 12.0;
-const float pump2Volume = 12.0;  
-const float pump3Volume = 0.0;  
+// Pump for one minute to measure pump speed (see helper script),
+// then pre-calculate pumping times in ms, 0 for don't pump
+// at last measurement, my pump capacity was 1.127ml/s
+// use unsigned long if you want to pump longer than 65535ms 
+const unsigned int pump1Time = 10647; //12ml
+const unsigned int pump2Time = 6211;  //7ml
+const unsigned int pump3Time = 0;  //don't pump
 // Hour:minute time to start pumping ever day
-const byte fertilizeStartHour = 8;
-const byte fertilizeStartMinute = 15;
+const byte fertilizeStartHour = 10;
+const byte fertilizeStartMinute = 20;
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
 Adafruit_DCMotor *pump1 = AFMS.getMotor(1);
 Adafruit_DCMotor *pump2 = AFMS.getMotor(2);
@@ -69,7 +68,7 @@ RTC_DS1307 RTC;
 // Output & Update
 // for now I pick up this output via a raspberry pi
 // and do some reporting there
-const byte updateInterval = 10; //10 secs
+const unsigned long updateInterval = 10000; // 10 secs
 
 // temperature measurement
 const byte temperaturePin = A0;
@@ -95,14 +94,13 @@ int O2 = 800;
 SoftwareSerial O2Serial(O2RX, O2TX);
 byte O2SensorLength = 0;
 char O2Sensor[sensorBufferSize+1];
-  
-////////////////////////////////////////////////////////////////////////////////              
-// Used for synchronizing the Time library with the RTC
-////////////////////////////////////////////////////////////////////////////////
-time_t syncProvider(){
-  return RTC.now().unixtime();
-}
 
+// Alarms/Timers
+Timer pumpReleaseTimer;
+Timer updateTimer;
+Timer updateSwitchesTimer;
+Alarm fertilizeAlarm;
+  
 ////////////////////////////////////////////////////////////////////////////////              
 // Switches
 // Go here to learn more about RC Switches and the Arduino
@@ -132,23 +130,45 @@ void RCLtransmit(int nHighPulses, int nLowPulses) {
 ////////////////////////////////////////////////////////////////////////////////              
 // Daily fertilization run
 ////////////////////////////////////////////////////////////////////////////////
-void Fertilize(){
-  if(pump1Volume > 0.0){
-     pump1->run(FORWARD);
-     delay((int) (pump1Volume / pumpCapacity * 1000.0));
-     pump1->run(RELEASE);
-  }
- if(pump2Volume > 0.0){
+void pump1Timeout(){
+  pump1->run(RELEASE);
+  if(pump2Time > 0){
      pump2->run(FORWARD);
-     delay((int) (pump2Volume / pumpCapacity * 1000.0));
-     pump2->run(RELEASE);
-  }
-  if(pump3Volume > 0.0){
+     pumpReleaseTimer.set(pump2Time, pump2Timeout, false);
+  }else if(pump3Time > 0){
      pump3->run(FORWARD);
-     delay((int) (pump3Volume / pumpCapacity * 1000.0));
-     pump3->run(RELEASE);
+     pumpReleaseTimer.set(pump3Time, pump3Timeout, false);
+  }else{
+     Serial.println(F("ST Fertilization done"));
   }
+}
+
+void pump2Timeout(){
+  pump2->run(RELEASE);
+  if(pump3Time > 0){
+     pump3->run(FORWARD);
+     pumpReleaseTimer.set(pump3Time, pump3Timeout, false);
+  }else{
+     Serial.println(F("ST Fertilization done"));
+  }
+}
+
+void pump3Timeout(){
+  pump3->run(RELEASE);
   Serial.println(F("ST Fertilization done"));
+}
+
+void Fertilize(){
+  if(pump1Time > 0){
+     pump1->run(FORWARD);
+     pumpReleaseTimer.set(pump1Time, pump1Timeout, false);
+  }else if(pump2Time > 0){
+     pump2->run(FORWARD);
+     pumpReleaseTimer.set(pump2Time, pump2Timeout, false);
+  }else if(pump3Time > 0){
+     pump3->run(FORWARD);
+     pumpReleaseTimer.set(pump3Time, pump3Timeout, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -301,24 +321,20 @@ void setup(){
   // Real Time Clock
   Wire.begin();
   RTC.begin();
-  setSyncProvider(syncProvider);
   
   //Switches
   pinMode(RCLpin, OUTPUT);
     
   checkSwitches();
   
-  Alarm.timerRepeat(switchCheckInterval, checkSwitches); 
+  updateSwitchesTimer.set(switchCheckInterval, checkSwitches, true); 
   
   // Fertilization
   AFMS.begin();
   pump1->setSpeed(255);
-  pump1->run(RELEASE); //turn pump off, just to be safe
   pump2->setSpeed(255);
-  pump2->run(RELEASE);
   pump3->setSpeed(255);
-  pump3->run(RELEASE);
-  Alarm.alarmRepeat(fertilizeStartHour, fertilizeStartMinute, 0, Fertilize);
+  fertilizeAlarm.set(fertilizeStartHour, fertilizeStartMinute, 0, Fertilize, true);
 
   // Sensors
   pHSerial.begin(38400);
@@ -326,7 +342,7 @@ void setup(){
   pHSerial.listen();
   
   // Update serial, sensor calibration, fan speed
-  Alarm.timerRepeat(updateInterval, Update); 
+  updateTimer.set(updateInterval, Update, true); 
   
   Serial.println(F("ST Controller initialized"));
 }
@@ -399,7 +415,7 @@ void loop(){
   // float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) - .5) * 100.0;  // TMP36
   temperature = (((analogRead(temperaturePin)/1024.0) * 5.0) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
   // smoothen the temperature readings
-  tempAverage = tempAverage - ((tempAverage - temperature)/1000.0);
+  tempAverage = tempAverage - ((tempAverage - temperature)/100.0);
   
   //get O2 readings from sensor
   while (O2Serial.available() && (O2SensorLength < sensorBufferSize)) { 
@@ -418,6 +434,9 @@ void loop(){
     }   
   }
    
-  Alarm.delay(2);
+  pumpReleaseTimer.check();
+  updateTimer.check();
+  updateSwitchesTimer.check();
+  fertilizeAlarm.check();
 }
 

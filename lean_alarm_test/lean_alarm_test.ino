@@ -7,20 +7,40 @@ Timer repeatTimer;
 Timer repeatTimer2;
 Alarm repeatAlarm;
 
+RTC_DS1307 RTC;
+
+void SerialPrintDigits(byte digits){
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits, DEC);
+}
+
 void onceTimerAction(){
-  Serial.println("onceTimerAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" onceTimerAction called!");
 }
 
 void repeatTimerAction(){
-  Serial.println("repeatTimerAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatTimerAction called!");
 }
 
 void repeatTimerAction2(){
-  Serial.println("repeatTimerAction2 called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatTimerAction2 called!");
 }
 
 void repeatAlarmAction(){
-  Serial.println("repeatAlarmAction called!");
+  SerialPrintDigits(RTC.now().hour());
+  Serial.print(":");
+  SerialPrintDigits(RTC.now().minute());
+  Serial.println(" repeatAlarmAction called!");
 }
 
 extern int __bss_end;
@@ -43,7 +63,7 @@ void setup(){
   onceTimer.set(30000, onceTimerAction, false);
   repeatTimer.set(10000, repeatTimerAction, true);
   repeatTimer2.set(11000, repeatTimerAction2, true);
-  repeatAlarm.set(21, 15, 00, repeatAlarmAction, true);
+  repeatAlarm.set(9, 52, 0, repeatAlarmAction, true);
   Serial.println(memoryFree());
 }
 
