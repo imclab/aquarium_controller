@@ -415,7 +415,7 @@ void loop(){
   // float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) - .5) * 100.0;  // TMP36
   temperature = (((analogRead(temperaturePin)/1024.0) * 5.0) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
   // smoothen the temperature readings
-  tempAverage = tempAverage - ((tempAverage - temperature)/100.0);
+  tempAverage = tempAverage - ((tempAverage - temperature)/1000.0);
   
   //get O2 readings from sensor
   while (O2Serial.available() && (O2SensorLength < sensorBufferSize)) { 

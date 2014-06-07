@@ -10,6 +10,9 @@
 #include "LeanAlarms.h"
 
 RTC_DS1307 leanRTC;
+const unsigned long syncInterval = 30000; //interval to sync with RTC in milliseconds, here: 30s
+unsigned long lastSync;
+unsigned long lastTime;
 
 Timer::Timer(){
 	_active = false;
@@ -43,19 +46,24 @@ void Alarm::set(byte hour, byte minute, byte second, AlarmCallback_t callback, b
 	_minute = minute;
 	_second = second;
 	_callback = callback;
-    uint32_t time = leanRTC.now().unixtime();
+	lastTime = leanRTC.now().unixtime();
+	lastSync = millis();
 	// set the event for today
-	_next = previousMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+	_next = previousMidnight(lastTime) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	// did the event already pass for today? if so, set it for tomorrow
-	if(time >= _next){
-		_next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+	if(lastTime >= _next){
+		_next = nextMidnight(lastTime) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	}
 	_repeat = repeat;
 }
 
 void Alarm::check(){
     if(_next > 0){
-	  uint32_t time = leanRTC.now().unixtime();
+	  if(millis() >= (lastSync + syncInterval)){
+	  	lastTime = leanRTC.now().unixtime();
+	  	lastSync = millis();
+	  }
+	  unsigned long time = lastTime + ((millis() - lastSync) / 1000); 
 	  if((time >= _next)){
 		if(_repeat){
     	  _next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
