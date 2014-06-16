@@ -17,6 +17,8 @@
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
+#include <Adafruit_MCP23017.h>
+#include <Adafruit_RGBLCDShield.h>
 #include <LeanAlarms.h>
 #include <Adafruit_MotorShield.h>
 #include <avr/pgmspace.h>
@@ -53,6 +55,10 @@ void setup(){
   updateTimer.set(updateInterval, Update, true); 
   
   Serial.println(F("ST Controller initialized"));
+  
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print(F("READY"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -81,12 +87,12 @@ void loop(){
   }
 
   // measure board voltage, used for reference later
-  // float vcc=float(readVcc())/1000.0;
+  float vcc=float(readVcc())/1000.0;
   // measure temperature
   // float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) - .5) * 100.0;  // TMP36
-  temperature = (((analogRead(temperaturePin)/1024.0) * 5.0) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
+  temperature = (((analogRead(temperaturePin)/1024.0) * vcc) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
   // smoothen the temperature readings
-  tempAverage = tempAverage - ((tempAverage - temperature)/100.0);
+  tempAverage = tempAverage - ((tempAverage - temperature)/1000.0);
   
   //get O2 readings from sensor
   while (O2Serial.available() && (O2SensorLength < sensorBufferSize)) { 

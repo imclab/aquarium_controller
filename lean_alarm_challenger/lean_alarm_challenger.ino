@@ -64,7 +64,7 @@ void setup(){
   Alarm.timerOnce(30, onceTimerAction); 
   Alarm.timerRepeat(10, repeatTimerAction); 
   Alarm.timerRepeat(11, repeatTimerAction2); 
-  Alarm.alarmRepeat(9, 55, 00, repeatAlarmAction);
+  Alarm.alarmRepeat(15, 29, 00, repeatAlarmAction);
   Serial.println(memoryFree());
 }
 

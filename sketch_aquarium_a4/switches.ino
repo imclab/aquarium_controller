@@ -82,36 +82,46 @@ void setSwitchState(byte nr){
   if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1]))){
     switch (nr) {
     case 1:
+      lcd.print(F("1"));
       RCLswitch(0b100111000010);
       break;
     case 2:
+      lcd.print(F("1"));
       RCLswitch(0b100110100010);
       break;
     case 3:
+      lcd.print(F("1"));
       RCLswitch(0b100110010010);
       break;
     case 4:
+      lcd.print(F("1"));
       RCLswitch(0b100110001010);
       break;
     case 5:
+      lcd.print(F("1"));
       RCLswitch(0b100110000110);
       break;
     }
   }else{
     switch (nr) {
     case 1:
+      lcd.print(F("0"));
       RCLswitch(0b100111000001);
       break;
     case 2:
+      lcd.print(F("0"));
       RCLswitch(0b100110100001);
       break;
     case 3:
+      lcd.print(F("0"));
       RCLswitch(0b100110010001);
       break;
     case 4:
+      lcd.print(F("0"));
       RCLswitch(0b100110001001);
       break;
     case 5:
+      lcd.print(F("0"));
       RCLswitch(0b100110000101);
       break;
     }
@@ -122,6 +132,8 @@ void setSwitchState(byte nr){
 // Transmit correct state to all switches
 ///////////////////////////////////////////////////////////////////////////////
 void checkSwitches(){
+  lcd.setCursor(9, 1);
+  lcd.print(F("S:"));
   for (byte i = 1; i < 6; i++){
     setSwitchState(i);
   } 

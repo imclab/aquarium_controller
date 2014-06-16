@@ -20,8 +20,8 @@ byte updateRuns = 0; //used to count update runs between switch checks
 // then pre-calculate pumping times in ms, 0 for don't pump
 // at last measurement, my pump capacity was 1.127ml/s
 // use unsigned long if you want to pump longer than 65535ms 
-const unsigned int pump1Time = 10647; //12ml
-const unsigned int pump2Time = 6211;  //7ml
+const unsigned int pump1Time = 8873; //10ml
+const unsigned int pump2Time = 3549;  //4ml
 const unsigned int pump3Time = 0;  //don't pump
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 10;
@@ -74,5 +74,8 @@ char O2Sensor[sensorBufferSize+1];
 Timer pumpReleaseTimer;
 Timer updateTimer;
 Alarm fertilizeAlarm;
+
+//LCD Output
+Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 #endif

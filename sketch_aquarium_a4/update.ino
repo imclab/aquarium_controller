@@ -31,6 +31,14 @@ void Update(){
   Serial.print(F("ME "));
   Serial.println(memoryFree());
   
+  lcd.setCursor(0, 0);
+  lcd.print(tempAverage, 1);
+  lcd.print(F("C pH "));
+  lcd.print(float(pH/100.0), 1);
+  lcd.setCursor(0, 1);
+  lcd.print(float(O2/100.0), 2);
+  lcd.print(F(" O2"));
+
   char buffer[10];
   dtostrf(tempAverage, -1, 1, buffer);
   buffer[2] = ',';
@@ -43,6 +51,8 @@ void Update(){
   
   // cooling
   if(tempAverage >= coolingTrigger){
+    lcd.setCursor(13, 0);
+    lcd.print(F("FAN"));
     float mySpeed = 150 + ((tempAverage - coolingTrigger) *  300);
     if(mySpeed > 255) mySpeed = 255;
     Serial.print(F("FA "));
@@ -50,6 +60,8 @@ void Update(){
     coolingVents->setSpeed(int(mySpeed));
     coolingVents->run(FORWARD);
   }else if(tempAverage <= (coolingTrigger - 0.2)){
+    lcd.setCursor(13, 0);
+    lcd.print(F("   "));
     coolingVents->run(RELEASE);
   }
   

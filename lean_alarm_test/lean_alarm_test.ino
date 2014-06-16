@@ -63,7 +63,7 @@ void setup(){
   onceTimer.set(30000, onceTimerAction, false);
   repeatTimer.set(10000, repeatTimerAction, true);
   repeatTimer2.set(11000, repeatTimerAction2, true);
-  repeatAlarm.set(9, 52, 0, repeatAlarmAction, true);
+  repeatAlarm.set(15, 31, 0, repeatAlarmAction, true);
   Serial.println(memoryFree());
 }
 
