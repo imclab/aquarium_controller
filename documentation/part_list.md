@@ -43,6 +43,10 @@ http://arduino.cc/en/Main/arduinoBoardUno
 Adafruit Motor Shield
 http://www.adafruit.com/products/1438
 
+## Display
+Adafruit LCD Shield Kit
+http://www.adafruit.com/products/772
+
 ## Various
 - Breadboard
 - Various breadboard connection cables/jumpers/copper cables

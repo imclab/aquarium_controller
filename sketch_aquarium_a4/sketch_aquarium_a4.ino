@@ -9,6 +9,7 @@
 //   - Fertilize: 3 fertilizer pumps
 //   - Control: 5 RC power switches
 //   - Cooling: control one set of 12v pc case cooling fans
+//   - Display: 16x2 LCD display
 // DISCLAIMER: this is a personal project. Pumping stuff into your aquarium
 // is DANGEROUS and so is controlling your aquarium hardware via RC switches.
 // Use this project as an inspiration only if you know what you are doing.

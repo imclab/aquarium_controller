@@ -9,6 +9,7 @@
 - Connect PC case cooling fans to M4 output of motor shield, mount fans on aquarium cover as appropriate (airflow: the fans should blow air into the hood/towards the water, not suck it out to prevent moisture damage). Only two cables need to be connected, the cable with the black marker (tachometer signal) can be clipped.
 - Connect 12 DC adaptor to Arduino
 - Connect USB cable to Arduino
+- Connect LCD Display I2C and power to Arduino according to Adafruit documentation. Make sure to connect power + ground directly to the Arduino, not via the breadboard any other connection that is close to the sensors, this would influence your sensor readings
 
 # Build
 I used a single-bottle wine cask for this Alpha setup, fixing the Arduino to the cask with screws, taping the breadboard next to it, drilling some holes for the BNC, temperature, ground, USB, power connecters and some large holes for the peristaltic pumps. The cask can (IMO) be closed after you’re done because the Arduino won’t produce much heat.
