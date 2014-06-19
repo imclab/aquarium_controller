@@ -24,8 +24,8 @@ const unsigned int pump1Time = 8873; //10ml
 const unsigned int pump2Time = 3549;  //4ml
 const unsigned int pump3Time = 0;  //don't pump
 // Hour:minute time to start pumping ever day
-const byte fertilizeStartHour = 10;
-const byte fertilizeStartMinute = 20;
+const byte fertilizeStartHour = 8;
+const byte fertilizeStartMinute = 25;
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
 Adafruit_DCMotor *pump1 = AFMS.getMotor(1);
 Adafruit_DCMotor *pump2 = AFMS.getMotor(2);
