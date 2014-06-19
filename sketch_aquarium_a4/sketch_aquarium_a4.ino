@@ -30,88 +30,51 @@
 // setup, runs once
 ////////////////////////////////////////////////////////////////////////////////
 void setup(){  
-  // Serial Communication
+  // Set up serial communication
   Serial.begin(38400);
   
-  // Real Time Clock
+  // Set up wire library (i2c communication)
   Wire.begin();
   
-  //Switches
+  // Set up LCD display
+  lcd.begin(16, 2);
+  
+  // Set up switches
   pinMode(RCLpin, OUTPUT);
-  checkSwitches();
     
-  // Fertilization
+  // Set up fertilization
   AFMS.begin();
   pump1->setSpeed(255);
   pump2->setSpeed(255);
   pump3->setSpeed(255);
+  // Alarm for daily fertilization
   fertilizeAlarm.set(fertilizeStartHour, fertilizeStartMinute, 0, Fertilize, true);
 
-  // Sensors
+  // Set up sensors
   pHSerial.begin(38400);
   O2Serial.begin(38400);
   pHSerial.listen();
   
-  // Update serial, sensor calibration, fan speed, switch states
+  // Timer to update serial, sensor calibration, fan speed, switch states
   updateTimer.set(updateInterval, Update, true); 
   
-  Serial.println(F("ST Controller initialized"));
+  // set all switches to correct state
+  checkSwitches();
   
-  lcd.begin(16, 2);
+  // we are ready now
   lcd.setCursor(0, 0);
   lcd.print(F("READY"));
+  Serial.println(F("ST Controller initialized"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
 // loop, runs continuously 
 ////////////////////////////////////////////////////////////////////////////////
-void loop(){ 
-  float measured;
-  char inchar;
-  float temperature;
+void loop(){  
+  measurepH();
+  measureO2();
+  measureTemperature();
   
-  //get pH readings from sensor
-  while (pHSerial.available() && (pHSensorLength < sensorBufferSize)) {                                            
-    inchar = (char)pHSerial.read();                               
-    if ((inchar == '\r') || ((pHSensorLength + 1) == sensorBufferSize)) {
-      pHSensor[pHSensorLength] = '\0';
-      measured = atof(pHSensor);
-      if((measured > 0.0) && (abs(pH - int(measured * 100.0)) <= 200)){
-        pH = pH - ((pH - int(measured * 100.0)) / 10);
-      }
-      pHSensorLength = 0;      
-      O2Serial.listen();
-    } else {
-      pHSensor[pHSensorLength] = inchar;
-      pHSensorLength++;     
-    }     
-  }
-
-  // measure board voltage, used for reference later
-  float vcc=float(readVcc())/1000.0;
-  // measure temperature
-  // float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) - .5) * 100.0;  // TMP36
-  temperature = (((analogRead(temperaturePin)/1024.0) * vcc) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
-  // smoothen the temperature readings
-  tempAverage = tempAverage - ((tempAverage - temperature)/1000.0);
-  
-  //get O2 readings from sensor
-  while (O2Serial.available() && (O2SensorLength < sensorBufferSize)) { 
-    inchar = (char)O2Serial.read();   
-    if ((inchar == '\r') || ((O2SensorLength + 1) == sensorBufferSize)) {
-      O2Sensor[O2SensorLength] = '\0';
-      measured = atof(O2Sensor);
-      if((measured > 0.0) && (abs(O2 - int(measured * 100.0))<=1200)){
-        O2 = O2 - ((O2 - int(measured * 100.0)) / 10); 
-      }
-      O2SensorLength = 0;      
-      pHSerial.listen();
-    } else {
-      O2Sensor[O2SensorLength] = inchar;
-      O2SensorLength++;       
-    }   
-  }
-   
   pumpReleaseTimer.check();
   updateTimer.check();
   fertilizeAlarm.check();

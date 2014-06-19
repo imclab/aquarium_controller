@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////              
 // Arduino Based Freshwater Aquarium Control
 ////////////////////////////////////////////////////////////////////////////////                        
-// Update: Output to serial, sensor calibration, fan speed, check switch states
+// Tab: Update. Output to serial, sensor calibration, fan speed, check switch states
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -14,9 +14,10 @@ void SerialPrintDigits(byte digits){
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
-// Regular update run
+// Regular update run, should be called every 10 seconds
 ////////////////////////////////////////////////////////////////////////////////
 void Update(){  
+  // output to serial
   Serial.print(F("TE "));
   Serial.println(tempAverage, 1);
   Serial.print(F("PH "));
@@ -31,14 +32,16 @@ void Update(){
   Serial.print(F("ME "));
   Serial.println(memoryFree());
   
+  // update LCD
   lcd.setCursor(0, 0);
   lcd.print(tempAverage, 1);
   lcd.print(F("C pH "));
   lcd.print(float(pH/100.0), 1);
   lcd.setCursor(0, 1);
   lcd.print(float(O2/100.0), 2);
-  lcd.print(F(" O2"));
+  lcd.print(F(" O2 "));
 
+  // send calibration data to sensors
   char buffer[10];
   dtostrf(tempAverage, -1, 1, buffer);
   buffer[2] = ',';
@@ -65,11 +68,11 @@ void Update(){
     coolingVents->run(RELEASE);
   }
   
-  // check switch states every 6 "update" calls (60 seconds)
-  updateRuns++;
-  if(updateRuns > 5){
-    checkSwitches();
-    updateRuns = 0;
-  }
+  // updating a switch takes some time,
+  // so we only check one switch with each update run
+  setSwitchState(updatingNow);
+  updatingNow++;
+  if(updatingNow > 5)
+    updatingNow = 1;
 }
 

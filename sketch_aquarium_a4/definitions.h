@@ -13,7 +13,7 @@ const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
 const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 10};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
-byte updateRuns = 0; //used to count update runs between switch checks
+byte updatingNow = 1; //used to loop through all switches
 
 // Fertilizer Pumps
 // Pump for one minute to measure pump speed (see helper script),
