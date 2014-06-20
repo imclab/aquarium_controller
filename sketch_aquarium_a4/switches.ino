@@ -24,11 +24,12 @@ void RCLswitch(uint16_t code) {
     }
 }
 
+// Pulse length is 325 microseconds, chip: HX2262
 void RCLtransmit(int nHighPulses, int nLowPulses) {
     digitalWrite(RCLpin, HIGH);
-    delayMicroseconds( 350 * nHighPulses);
+    delayMicroseconds( 325 * nHighPulses);
     digitalWrite(RCLpin, LOW);
-    delayMicroseconds( 350 * nLowPulses);
+    delayMicroseconds( 325 * nLowPulses);
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -82,42 +83,10 @@ void setSwitchState(byte nr){
   lcd.setCursor(10 + nr, 1); 
   if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1]))){
     lcd.print(F("1"));
-    switch (nr) {
-    case 1:
-      RCLswitch(0b100111000010);
-      break;
-    case 2:
-      RCLswitch(0b100110100010);
-      break;
-    case 3:
-      RCLswitch(0b100110010010);
-      break;
-    case 4:
-      RCLswitch(0b100110001010);
-      break;
-    case 5:
-      RCLswitch(0b100110000110);
-      break;
-    }
+    RCLswitch(0b100110000010 + (0b1 << (7 - nr)));
   }else{
     lcd.print(F("0"));
-    switch (nr) {
-    case 1:
-      RCLswitch(0b100111000001);
-      break;
-    case 2:
-      RCLswitch(0b100110100001);
-      break;
-    case 3:
-      RCLswitch(0b100110010001);
-      break;
-    case 4:
-      RCLswitch(0b100110001001);
-      break;
-    case 5:
-      RCLswitch(0b100110000101);
-      break;
-    }
+    RCLswitch(0b100110000001 + (0b1 << (7 - nr)));
   }
 }
 
