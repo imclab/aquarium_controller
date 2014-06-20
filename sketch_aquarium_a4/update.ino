@@ -7,16 +7,16 @@
 ////////////////////////////////////////////////////////////////////////////////              
 // Print clock digits to serial
 ////////////////////////////////////////////////////////////////////////////////
-void SerialPrintDigits(byte digits){
+void serialPrintDigits(byte digits){
   if(digits < 10)
-    Serial.print('0');
+    Serial.print(F("0"));
   Serial.print(digits, DEC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
 // Regular update run, should be called every 10 seconds
 ////////////////////////////////////////////////////////////////////////////////
-void Update(){  
+void update(){  
   // output to serial
   Serial.print(F("TE "));
   Serial.println(tempAverage, 1);
@@ -25,9 +25,9 @@ void Update(){
   Serial.print(F("O2 "));
   Serial.println(float(O2/100.0), 2);
   Serial.print(F("TI "));
-  SerialPrintDigits(RTC.now().hour());
+  serialPrintDigits(RTC.now().hour());
   Serial.print(F(":"));
-  SerialPrintDigits(RTC.now().minute());
+  serialPrintDigits(RTC.now().minute());
   Serial.println();
   Serial.print(F("ME "));
   Serial.println(memoryFree());
@@ -42,15 +42,16 @@ void Update(){
   lcd.print(F(" O2 "));
 
   // send calibration data to sensors
-  char buffer[10];
-  dtostrf(tempAverage, -1, 1, buffer);
-  buffer[2] = ',';
-  buffer[4] = '\r';  
-  buffer[5] = '\0';  
-  O2Serial.print(buffer); 
-  O2Serial.print(F("L1\r"));
-  pHSerial.print(buffer);
-  pHSerial.print(F("L1\r"));
+  // maybe not necessary? http://www.omega.com/Green/pdf/pHbasics_REF.pdf
+  // char buffer[10];
+  // dtostrf(tempAverage, -1, 1, buffer);
+  // buffer[2] = ',';
+  // buffer[4] = '\r';  
+  // buffer[5] = '\0';  
+  // O2Serial.print(buffer); 
+  // O2Serial.print(F("L1\r"));
+  // pHSerial.print(buffer);
+  // pHSerial.print(F("L1\r"));
   
   // cooling
   if(tempAverage >= coolingTrigger){

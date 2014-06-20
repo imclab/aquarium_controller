@@ -53,10 +53,14 @@ void setup(){
   // Set up sensors
   pHSerial.begin(38400);
   O2Serial.begin(38400);
+  O2Serial.print(F("25,0\r")); 
+  O2Serial.print(F("L0\r"));
+  pHSerial.print(F("25,0\r"));
+  pHSerial.print(F("L0\r"));
   pHSerial.listen();
   
   // Timer to update serial, sensor calibration, fan speed, switch states
-  updateTimer.set(updateInterval, Update, true); 
+  updateTimer.set(updateInterval, update, true); 
   
   // set all switches to correct state
   checkSwitches();
