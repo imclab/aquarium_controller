@@ -8,10 +8,10 @@ const byte RCLpin = 7;
 // switches are not turned off/on by alarms, rather the
 // correct state is sent to each switch on a regular basis
 // switches should not be used for time sensitive tasks (e.g. fertilizer pumps)
-const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 10};
+const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 11};
 const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
-const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 10};
+const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 21};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 byte updatingNow = 1; //used to loop through all switches
 
@@ -20,8 +20,8 @@ byte updatingNow = 1; //used to loop through all switches
 // then pre-calculate pumping times in ms, 0 for don't pump
 // at last measurement, my pump capacity was 1.127ml/s
 // use unsigned long if you want to pump longer than 65535ms 
-const unsigned int pump1Time = 8873; //10ml
-const unsigned int pump2Time = 3549;  //4ml
+const unsigned int pump1Time = 7098; //8ml
+const unsigned int pump2Time = 2661;  //3ml
 const unsigned int pump3Time = 0;  //don't pump
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 8;
@@ -77,5 +77,13 @@ Alarm fertilizeAlarm;
 
 //LCD Output
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+
+//Menu
+boolean inMenu = false;
+byte menuPosition = 1;
+byte menuMaxpos = 2;
+
+//Modes
+boolean maintenanceMode = false;
 
 #endif

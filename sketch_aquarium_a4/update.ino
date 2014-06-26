@@ -16,7 +16,7 @@ void serialPrintDigits(byte digits){
 ////////////////////////////////////////////////////////////////////////////////              
 // Regular update run, should be called every 10 seconds
 ////////////////////////////////////////////////////////////////////////////////
-void update(){  
+void update(){ 
   // output to serial
   Serial.print(F("TE "));
   Serial.println(tempAverage, 1);
@@ -32,14 +32,16 @@ void update(){
   Serial.print(F("ME "));
   Serial.println(memoryFree());
   
-  // update LCD
-  lcd.setCursor(0, 0);
-  lcd.print(tempAverage, 1);
-  lcd.print(F("C pH "));
-  lcd.print(float(pH/100.0), 1);
-  lcd.setCursor(0, 1);
-  lcd.print(float(O2/100.0), 2);
-  lcd.print(F(" O2 "));
+  if(!inMenu){
+    // update LCD
+    lcd.setCursor(0, 0);
+    lcd.print(tempAverage, 1);
+    lcd.print(F("C pH "));
+    lcd.print(float(pH/100.0), 1);
+    lcd.setCursor(0, 1);
+    lcd.print(float(O2/100.0), 2);
+    lcd.print(F(" O2 "));
+  }
 
   // send calibration data to sensors
   // maybe not necessary? http://www.omega.com/Green/pdf/pHbasics_REF.pdf
@@ -55,8 +57,10 @@ void update(){
   
   // cooling
   if(tempAverage >= coolingTrigger){
-    lcd.setCursor(13, 0);
-    lcd.print(F("FAN"));
+    if(!inMenu){
+      lcd.setCursor(13, 0);
+      lcd.print(F("FAN"));
+    }
     float mySpeed = 150 + ((tempAverage - coolingTrigger) *  300);
     if(mySpeed > 255) mySpeed = 255;
     Serial.print(F("FA "));
@@ -64,8 +68,10 @@ void update(){
     coolingVents->setSpeed(int(mySpeed));
     coolingVents->run(FORWARD);
   }else if(tempAverage <= (coolingTrigger - 0.2)){
-    lcd.setCursor(13, 0);
-    lcd.print(F("   "));
+    if(!inMenu){
+      lcd.setCursor(13, 0);
+      lcd.print(F("   "));
+    }
     coolingVents->run(RELEASE);
   }
   

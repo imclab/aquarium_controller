@@ -79,6 +79,8 @@ void loop(){
   measureO2();
   measureTemperature();
   
+  checkMenu();
+  
   pumpReleaseTimer.check();
   updateTimer.check();
   fertilizeAlarm.check();

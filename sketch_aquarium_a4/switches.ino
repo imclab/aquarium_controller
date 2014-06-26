@@ -77,15 +77,26 @@ boolean inTimeWindow(byte onHour, byte onMinute, byte offHour, byte offMinute){
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
+// Returns true if switch "nr" should be off due to maintenance mode
+///////////////////////////////////////////////////////////////////////////////
+boolean maintenanceSwitchOff(byte nr){
+  // 2 is front light bar, 3 is co2, need to put this in constants
+  return maintenanceMode && ((nr == 2) || (nr == 3));
+}
+
+////////////////////////////////////////////////////////////////////////////////              
 // Sets the correct state for a switch (e.g. after a reboot)
 ///////////////////////////////////////////////////////////////////////////////
 void setSwitchState(byte nr){ 
-  lcd.setCursor(10 + nr, 1); 
-  if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1]))){
-    lcd.print(F("1"));
+  if(!inMenu)
+    lcd.setCursor(10 + nr, 1); 
+  if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1])) && !maintenanceSwitchOff(nr)){
+    if(!inMenu)
+      lcd.print(F("1"));
     RCLswitch(0b100110000010 + (0b1 << (7 - nr)));
   }else{
-    lcd.print(F("0"));
+    if(!inMenu)
+      lcd.print(F("0"));
     RCLswitch(0b100110000001 + (0b1 << (7 - nr)));
   }
 }
@@ -94,8 +105,10 @@ void setSwitchState(byte nr){
 // Transmit correct state to all switches
 ///////////////////////////////////////////////////////////////////////////////
 void checkSwitches(){
-  lcd.setCursor(9, 1);
-  lcd.print(F("S:"));
+  if(!inMenu){
+    lcd.setCursor(9, 1);
+    lcd.print(F("S:"));
+  }
   for (byte i = 1; i < 6; i++){
     setSwitchState(i);
   } 
