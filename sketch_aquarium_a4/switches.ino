@@ -77,11 +77,19 @@ boolean inTimeWindow(byte onHour, byte onMinute, byte offHour, byte offMinute){
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
-// Returns true if switch "nr" should be off due to maintenance mode
+// Returns true if switch "nr" should be OFF due to maintenance mode
 ///////////////////////////////////////////////////////////////////////////////
 boolean maintenanceSwitchOff(byte nr){
   // 2 is front light bar, 3 is co2, need to put this in constants
   return maintenanceMode && ((nr == 2) || (nr == 3));
+}
+
+////////////////////////////////////////////////////////////////////////////////              
+// Returns true if switch "nr" should be ON due to maintenance mode
+///////////////////////////////////////////////////////////////////////////////
+boolean maintenanceSwitchOn(byte nr){
+  // 1 is back light bar, need to put this in constants
+  return maintenanceMode && (nr == 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////              
@@ -90,7 +98,7 @@ boolean maintenanceSwitchOff(byte nr){
 void setSwitchState(byte nr){ 
   if(!inMenu)
     lcd.setCursor(10 + nr, 1); 
-  if(inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1])) && !maintenanceSwitchOff(nr)){
+  if((inTimeWindow(pgm_read_byte(&switchOnHours[nr-1]), pgm_read_byte(&switchOnMinutes[nr-1]), pgm_read_byte(&switchOffHours[nr-1]), pgm_read_byte(&switchOffMinutes[nr-1])) && !maintenanceSwitchOff(nr)) || maintenanceSwitchOn(nr)){
     if(!inMenu)
       lcd.print(F("1"));
     RCLswitch(0b100110000010 + (0b1 << (7 - nr)));

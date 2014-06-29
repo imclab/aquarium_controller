@@ -25,11 +25,15 @@
 #include <avr/pgmspace.h>
 #include <RTClib.h>
 #include "definitions.h"
+#include <avr/wdt.h>
 
 ////////////////////////////////////////////////////////////////////////////////              
 // setup, runs once
 ////////////////////////////////////////////////////////////////////////////////
 void setup(){  
+  // tell the watchdog to reboot the Arduino if it doesn't react for 8s
+  wdt_enable(WDTO_8S);
+  
   // Set up serial communication
   Serial.begin(38400);
   
@@ -75,6 +79,9 @@ void setup(){
 // loop, runs continuously 
 ////////////////////////////////////////////////////////////////////////////////
 void loop(){  
+  // tell the watchdog that we are still alive
+  wdt_reset();
+  
   measurepH();
   measureO2();
   measureTemperature();
