@@ -11,7 +11,7 @@ const byte RCLpin = 7;
 const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 11};
 const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
-const byte switchOffHours[5]PROGMEM = {23, 23, 23, 10, 23};
+const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 21};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 byte updatingNow = 1; //used to loop through all switches
 
