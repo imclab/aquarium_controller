@@ -1,11 +1,9 @@
-#include <Wire.h>         //needed for RTClib
-#include <RTClib.h>       //needed for LeanAlarms
-#include <LeanAlarms.h>
+// Last Test: 8282Byte Sketch size, 1442RAM
 
-Timer onceTimer;
-Timer repeatTimer;
-Timer repeatTimer2;
-Alarm repeatAlarm;
+#include <Wire.h>
+#include <RTClib.h>
+#include <Time.h>
+#include <TimeAlarms.h>
 
 RTC_DS1307 RTC;
 
@@ -13,6 +11,10 @@ void SerialPrintDigits(byte digits){
   if(digits < 10)
     Serial.print('0');
   Serial.print(digits, DEC);
+}
+
+time_t syncProvider(){
+  return RTC.now().unixtime();
 }
 
 void onceTimerAction(){
@@ -57,20 +59,19 @@ int memoryFree()
   return freeValue;
 }
 
-void setup(){  
+void setup(){
   Wire.begin();
   Serial.begin(38400);
-  onceTimer.set(30000, onceTimerAction, false);
-  repeatTimer.set(10000, repeatTimerAction, true);
-  repeatTimer2.set(11000, repeatTimerAction2, true);
-  repeatAlarm.set(15, 31, 0, repeatAlarmAction, true);
+  setSyncProvider(syncProvider);
+  Alarm.timerOnce(30, onceTimerAction); 
+  Alarm.timerRepeat(10, repeatTimerAction); 
+  Alarm.timerRepeat(11, repeatTimerAction2); 
+  Alarm.alarmRepeat(15, 29, 00, repeatAlarmAction);
   Serial.println(memoryFree());
 }
 
-void loop(){ 
-  delay(1);
-  onceTimer.check();
-  repeatTimer.check();
-  repeatTimer2.check();
-  repeatAlarm.check();
+void loop(){
+  Alarm.delay(1);
 }
+
+

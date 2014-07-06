@@ -1,6 +1,6 @@
 /*
 AqRTC: Arduino RTC library with safe i2c communication, plausibility checking and caching
-Will try to fake real time based on compile date/time if no RTC is found
+Fake real time based on compile date/time if no RTC is found
 Currently supports: DS1307
 Chris Lüscher, July 2014
 */
@@ -9,7 +9,7 @@ Chris Lüscher, July 2014
 #define _AQRTC_H_
 
 // Simple general-purpose date/time class (no TZ / DST / leap second handling!)
-// Code by JeeLabs http://news.jeelabs.org/code/
+// Code based on work by JeeLabs http://news.jeelabs.org/code/
 class DateTime {
 public:
     DateTime (uint32_t t =0);
@@ -35,9 +35,9 @@ protected:
 
 class AqRTC {
 public:
-    uint8_t begin(void);
+    void begin(const DateTime& compileTime);
     void adjust(const DateTime& dt);
-    uint8_t isRunning(void);
+    bool isRunning();
     DateTime now();
 protected:
 	bool readTime();

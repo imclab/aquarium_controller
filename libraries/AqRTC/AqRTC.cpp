@@ -11,13 +11,12 @@ Chris Lüscher, July 2014
 #include <Arduino.h>
 
 #define RTC_ADDRESS 0x68
-#define SECONDS_PER_DAY 86400L
 #define SECONDS_FROM_1970_TO_2000 946684800
 #define SYNC_INTERVAL 30000
 
 ////////////////////////////////////////////////////////////////////////////////
 // utility code, some of this could be exposed in the DateTime API if needed
-// Code by JeeLabs http://news.jeelabs.org/code/
+// Code based on work by JeeLabs http://news.jeelabs.org/code/
 
 const uint8_t daysInMonth [] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
 
@@ -33,14 +32,18 @@ static uint16_t date2days(uint16_t y, uint8_t m, uint8_t d) {
     return days + 365 * y + (y + 3) / 4 - 1;
 }
 
-static long time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s) {
+uint32_t time2uint32(uint16_t days, uint8_t h, uint8_t m, uint8_t s) {
     return ((days * 24L + h) * 60 + m) * 60 + s;
+}
+
+uint32_t toUnixtime(uint16_t y, uint8_t m, uint8_t d, uint8_t hh, uint8_t mm, uint8_t ss){
+    return time2uint32(date2days(y, m, d), hh, mm, ss) + SECONDS_FROM_1970_TO_2000;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DateTime implementation - ignores time zones and DST changes
 // NOTE: also ignores leap seconds, see http://en.wikipedia.org/wiki/Leap_second
-// Code by JeeLabs http://news.jeelabs.org/code/
+// Code based on work by JeeLabs http://news.jeelabs.org/code/
 
 DateTime::DateTime (uint32_t t) {
   t -= SECONDS_FROM_1970_TO_2000;    // bring to 2000 timestamp from 1970
@@ -115,12 +118,7 @@ uint8_t DateTime::dayOfWeek() const {
 }
 
 uint32_t DateTime::unixtime(void) const {
-  uint32_t t;
-  uint16_t days = date2days(yOff, m, d);
-  t = time2long(days, hh, mm, ss);
-  t += SECONDS_FROM_1970_TO_2000;  // seconds from 1970 to 2000
-
-  return t;
+  return toUnixtime(yOff, m, d, hh, mm, ss);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,13 +127,15 @@ uint32_t DateTime::unixtime(void) const {
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 
-uint8_t AqRTC::begin(void) {
-  lastTime = 0;
-  if(!readTime()){
-    lastTime = DateTime(__DATE__, __TIME__).unixtime();
-  }
-  lastSync = millis();
-  return 1;
+void AqRTC::begin(const DateTime& compileTime){    
+    if(!isRunning()){
+        adjust(compileTime);
+    } else {
+        lastTime = 0;
+        if(!readTime())
+            lastTime = compileTime.unixtime();
+    }
+    lastSync = millis();
 }
 
 bool AqRTC::readTime(){
@@ -151,9 +151,9 @@ bool AqRTC::readTime(){
             Wire.read();
             uint8_t d = bcd2bin(Wire.read());
             uint8_t m = bcd2bin(Wire.read());
-            uint16_t y = bcd2bin(Wire.read()) + 2000;
+            uint16_t y = bcd2bin(Wire.read());
 
-            newTime = DateTime (y, m, d, hh, mm, ss).unixtime();
+            newTime = toUnixtime(y, m, d, hh, mm, ss);
             if(newTime > lastTime){ // time did not suddenly start to go backward
                 lastTime = newTime;
                 return true;
@@ -163,7 +163,7 @@ bool AqRTC::readTime(){
     return false;
 }
 
-uint8_t AqRTC::isRunning(void) {
+bool AqRTC::isRunning() {
     Wire.beginTransmission(RTC_ADDRESS);
     Wire.write(0);
     if(Wire.endTransmission() == 0){
@@ -172,7 +172,7 @@ uint8_t AqRTC::isRunning(void) {
             return !(ss>>7);
         }
     }
-    return 0;
+    return false;
 }
 
 void AqRTC::adjust(const DateTime& dt) {
@@ -188,20 +188,17 @@ void AqRTC::adjust(const DateTime& dt) {
     Wire.write(0);
     Wire.endTransmission();
 
-    lastTime = 0;
-    if(!readTime()){
-        lastTime = dt.unixtime();
-    }
-    lastSync = millis();
+    lastTime = dt.unixtime();
 }
 
 DateTime AqRTC::now() {
-	if(millis() >= (lastSync + SYNC_INTERVAL)){
-		if(readTime()){
-            lastSync = millis();
-		}
-	}
-	return DateTime(lastTime + (millis() - lastSync/1000));
+    if((millis() - lastSync) >= SYNC_INTERVAL){
+        if(!readTime())
+            lastTime += ((millis() - lastSync)/1000); //this is not the most precise way to do this, millis might get lost
+        lastSync = millis();                          //but heck, we are simulating time based on compile time
+    }
+
+    return DateTime(lastTime + ((millis() - lastSync)/1000));
 }
 
 AqRTC RTC = AqRTC();

@@ -20,10 +20,10 @@
 #include <Wire.h>
 #include <Adafruit_MCP23017.h>
 #include <Adafruit_RGBLCDShield.h>
-#include <LeanAlarms.h>
+#include <AqAlarms.h>
 #include <Adafruit_MotorShield.h>
 #include <avr/pgmspace.h>
-#include <RTClib.h>
+#include <AqRTC.h>
 #include "definitions.h"
 #include <avr/wdt.h>
 
@@ -39,6 +39,9 @@ void setup(){
   
   // Set up wire library (i2c communication)
   Wire.begin();
+  
+  // Set up real time clock
+  RTC.begin(DateTime(__DATE__, __TIME__));
   
   // Set up LCD display
   lcd.begin(16, 2);
@@ -72,7 +75,7 @@ void setup(){
   // we are ready now
   lcd.setCursor(0, 0);
   lcd.print(F("READY"));
-  Serial.println(F("ST Controller initialized"));
+  Serial.println(F("ST Ready"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////              

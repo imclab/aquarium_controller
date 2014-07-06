@@ -1,11 +1,11 @@
 /*
-  LeanAlarms.h - A memory-efficient, millisecond-precise library for timed events on the Arduino.
+  AqAlarms.h - A memory-efficient, millisecond-precise library for timed events on the Arduino.
   Created by Chris Lüscher, 2014.
   Released under GPL V2.
 */
 
-#ifndef LeanAlarms_h
-#define LeanAlarms_h
+#ifndef AqAlarms_h
+#define AqAlarms_h
 
 #include "Arduino.h"
 

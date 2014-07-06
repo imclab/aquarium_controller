@@ -1,18 +1,18 @@
-#include <Wire.h>
-#include <RTClib.h>
-#include <Time.h>
-#include <TimeAlarms.h>
+// Last Test: 8804Byte Sketch size, 1438RAM
 
-RTC_DS1307 RTC;
+#include <Wire.h>         //needed for AqRTC
+#include <AqRTC.h>        //needed for AqAlarms
+#include <AqAlarms.h>
+
+Timer onceTimer;
+Timer repeatTimer;
+Timer repeatTimer2;
+Alarm repeatAlarm;
 
 void SerialPrintDigits(byte digits){
   if(digits < 10)
     Serial.print('0');
   Serial.print(digits, DEC);
-}
-
-time_t syncProvider(){
-  return RTC.now().unixtime();
 }
 
 void onceTimerAction(){
@@ -57,19 +57,21 @@ int memoryFree()
   return freeValue;
 }
 
-void setup(){
+void setup(){  
   Wire.begin();
   Serial.begin(38400);
-  setSyncProvider(syncProvider);
-  Alarm.timerOnce(30, onceTimerAction); 
-  Alarm.timerRepeat(10, repeatTimerAction); 
-  Alarm.timerRepeat(11, repeatTimerAction2); 
-  Alarm.alarmRepeat(15, 29, 00, repeatAlarmAction);
+  RTC.begin(DateTime(__DATE__, __TIME__));
+  onceTimer.set(30000, onceTimerAction, false);
+  repeatTimer.set(10000, repeatTimerAction, true);
+  repeatTimer2.set(11000, repeatTimerAction2, true);
+  repeatAlarm.set(15, 31, 0, repeatAlarmAction, true);
   Serial.println(memoryFree());
 }
 
-void loop(){
-  Alarm.delay(1);
+void loop(){ 
+  delay(1);
+  onceTimer.check();
+  repeatTimer.check();
+  repeatTimer2.check();
+  repeatAlarm.check();
 }
-
-

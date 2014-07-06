@@ -6,13 +6,8 @@
 
 #include "Arduino.h"
 #include <Wire.h>
-#include <RTClib.h>
-#include "LeanAlarms.h"
-
-RTC_DS1307 leanRTC;
-const unsigned long syncInterval = 30000; //interval to sync with RTC in milliseconds, here: 30s
-unsigned long lastSync;
-unsigned long lastTime;
+#include <AqRTC.h>
+#include "AqAlarms.h"
 
 Timer::Timer(){
 	_active = false;
@@ -46,27 +41,20 @@ void Alarm::set(byte hour, byte minute, byte second, AlarmCallback_t callback, b
 	_minute = minute;
 	_second = second;
 	_callback = callback;
-	lastTime = leanRTC.now().unixtime();
-	lastSync = millis();
 	// set the event for today
-	_next = previousMidnight(lastTime) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+	_next = previousMidnight(RTC.now().unixtime()) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	// did the event already pass for today? if so, set it for tomorrow
-	if(lastTime >= _next){
-		_next = nextMidnight(lastTime) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+	if(RTC.now().unixtime() >= _next){
+		_next = nextMidnight(RTC.now().unixtime()) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	}
 	_repeat = repeat;
 }
 
 void Alarm::check(){
     if(_next > 0){
-	  if(millis() >= (lastSync + syncInterval)){
-	  	lastTime = leanRTC.now().unixtime();
-	  	lastSync = millis();
-	  }
-	  unsigned long time = lastTime + ((millis() - lastSync) / 1000); 
-	  if((time >= _next)){
+	  if((RTC.now().unixtime() >= _next)){
 		if(_repeat){
-    	  _next = nextMidnight(time) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
+    	  _next = nextMidnight(RTC.now().unixtime()) + _hour * SECS_PER_HOUR + _minute * SECS_PER_MIN + _second;
 	    }else{
 		  _next = 0;
 	    }

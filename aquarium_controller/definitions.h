@@ -37,9 +37,6 @@ Adafruit_DCMotor *pump3 = AFMS.getMotor(3);
 const float coolingTrigger = 23.7;  
 Adafruit_DCMotor *coolingVents = AFMS.getMotor(4);
 
-//Real Time Clock
-RTC_DS1307 RTC;
-
 // Output & Update
 // for now I pick up this output via a raspberry pi
 // and do some reporting there
