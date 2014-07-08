@@ -20,8 +20,8 @@ byte updatingNow = 1; //used to loop through all switches
 // then pre-calculate pumping times in ms, 0 for don't pump
 // at last measurement, my pump capacity was 1.127ml/s
 // use unsigned long if you want to pump longer than 65535ms 
-const unsigned int pump1Time = 7098; //8ml
-const unsigned int pump2Time = 2661;  //3ml
+const unsigned int pump1Time = 8873; //10ml
+const unsigned int pump2Time = 3549;  //4ml
 const unsigned int pump3Time = 0;  //don't pump
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 8;
