@@ -51,9 +51,7 @@ void setup(){
     
   // Set up fertilization
   AFMS.begin();
-  pump1->setSpeed(255);
-  pump2->setSpeed(255);
-  pump3->setSpeed(255);
+  
   // Alarm for daily fertilization
   fertilizeAlarm.set(fertilizeStartHour, fertilizeStartMinute, 0, Fertilize, true);
 

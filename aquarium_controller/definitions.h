@@ -17,19 +17,16 @@ byte updatingNow = 1; //used to loop through all switches
 
 // Fertilizer Pumps
 // Pump for one minute to measure pump speed (see helper script),
-// then pre-calculate pumping times in ms, 0 for don't pump
-// at last measurement, my pump capacity was 1.127ml/s
-// use unsigned long if you want to pump longer than 65535ms 
-const unsigned int pump1Time = 8873; //10ml
-const unsigned int pump2Time = 3549;  //4ml
-const unsigned int pump3Time = 0;  //don't pump
+// then pre-calculate pumping times in ms, 0 for don't pump.
+// At last measurement, my pump capacity was 1.127ml/s.
+// Use unsigned long if you want to pump longer than 65535ms 
+const unsigned int pumpTime[]PROGMEM = {8873, 3549, 0}; //10ml 4ml off
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 8;
 const byte fertilizeStartMinute = 25;
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
-Adafruit_DCMotor *pump1 = AFMS.getMotor(1);
-Adafruit_DCMotor *pump2 = AFMS.getMotor(2);
-Adafruit_DCMotor *pump3 = AFMS.getMotor(3);
+Adafruit_DCMotor *pump[] = {AFMS.getMotor(1), AFMS.getMotor(2), AFMS.getMotor(3)};
+byte pumpingNow = 0; //used to loop through all pumps
 
 // Cooling
 // Start cooling at a temperature higher than...
