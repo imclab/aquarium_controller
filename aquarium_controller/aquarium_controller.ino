@@ -42,7 +42,7 @@ void setup(){
   
   // Set up real time clock
   RTC.begin(DateTime(__DATE__, __TIME__));
-  
+
   // Set up LCD display
   lcd.begin(16, 2);
   

@@ -3,16 +3,24 @@
 
 // Switches
 const byte RCLpin = 7;
-// Hour:minute times to switch on, for up to 5 switches
-// the time you set for unused switches does not matter
-// switches are not turned off/on by alarms, rather the
-// correct state is sent to each switch on a regular basis
-// switches should not be used for time sensitive tasks (e.g. fertilizer pumps)
+// Switch types: 
+// T = Timer
+// M = Maintenance (Timer, but turned off during maintenance)
+// P = pH (Timer, pH value and turned off during maintenance)
+// 0 = always off
+// 1 = always on
+const char switchTypes[]PROGMEM = "TMP0T";
+// Hour:minute times to switch on.
+// Switches should not be used for highly time sensitive tasks (e.g. fertilizer pumps).
 const byte switchOnHours[5]PROGMEM = {13, 13, 13, 10, 11};
 const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // Hour:minute times to switch off
 const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 21};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
+// pH switches are turned off below this value
+const int targetpH = 640;
+// stores the switch states for output
+char switchMatrix[] = "00000";
 byte updatingNow = 1; //used to loop through all switches
 
 // Fertilizer Pumps

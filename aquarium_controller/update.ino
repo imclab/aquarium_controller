@@ -31,6 +31,8 @@ void update(){
   Serial.println();
   Serial.print(F("ME "));
   Serial.println(memoryFree());
+  Serial.print(F("SW "));
+  Serial.println(switchMatrix);
   
   if(!inMenu){
     // update LCD
@@ -40,7 +42,10 @@ void update(){
     lcd.print(float(pH/100.0), 1);
     lcd.setCursor(0, 1);
     lcd.print(float(O2/100.0), 2);
-    lcd.print(F(" O2 "));
+    if(O2 < 1000)
+      lcd.print(F(" "));
+    lcd.print(F(" O2 S:"));
+    lcd.print(switchMatrix);
   }
 
   // send calibration data to sensors
