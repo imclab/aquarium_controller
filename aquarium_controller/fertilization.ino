@@ -25,4 +25,5 @@ void pumpRun(){
 void Fertilize(){
   pumpingNow = 0;
   pumpRun();
+  Serial.println(F("ST Fertilization run"));
 }

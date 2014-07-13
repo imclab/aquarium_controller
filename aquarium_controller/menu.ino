@@ -13,6 +13,9 @@ void printMenuPosition(byte pos){
         lcd.print(F("Maintenace"));
       break;
     case 2:
+      lcd.print(F("Fert. run"));
+      break;
+    case 3:
       lcd.print(F("Exit Menu"));
       break;
   }  
@@ -37,6 +40,9 @@ void menuSelect(byte selection){
         maintenanceMode = true;
       break;
     case 2:
+      Fertilize();
+      break;
+    case 3:
       break;
   }
 }

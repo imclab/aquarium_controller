@@ -25,6 +25,7 @@ Adafruit_DCMotor *pump3 = AFMS.getMotor(3);
 void setup() {
   Serial.begin(38400);
   AFMS.begin();
+  delay(10000);
   Serial.println("Flushing Pump 1.");
   pump1->setSpeed(255);
   pump1->run(FORWARD);

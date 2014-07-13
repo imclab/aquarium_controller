@@ -18,7 +18,7 @@ const byte switchOnMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 const byte switchOffHours[5]PROGMEM = {21, 21, 21, 10, 21};
 const byte switchOffMinutes[5]PROGMEM = {15, 25, 00, 10, 10};
 // pH switches are turned off below this value
-const int targetpH = 640;
+const int targetpH = 660;
 // stores the switch states for output
 char switchMatrix[] = "00000";
 byte updatingNow = 1; //used to loop through all switches
@@ -28,7 +28,7 @@ byte updatingNow = 1; //used to loop through all switches
 // then pre-calculate pumping times in ms, 0 for don't pump.
 // At last measurement, my pump capacity was 1.127ml/s.
 // Use unsigned long if you want to pump longer than 65535ms 
-const unsigned int pumpTime[]PROGMEM = {8873, 3549, 0}; //10ml 4ml off
+const unsigned int pumpTime[]PROGMEM = {6654, 4436, 6654}; //7.5ml 5ml 7.5ml (Basic EI, Mikro Basic, Special N)
 // Hour:minute time to start pumping ever day
 const byte fertilizeStartHour = 8;
 const byte fertilizeStartMinute = 25;
@@ -83,7 +83,7 @@ Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 //Menu
 boolean inMenu = false;
 byte menuPosition = 1;
-byte menuMaxpos = 2;
+byte menuMaxpos = 3;
 
 //Modes
 boolean maintenanceMode = false;
