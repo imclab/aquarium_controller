@@ -1,7 +1,5 @@
 /*
 AqRTC: Arduino RTC library with safe i2c communication, plausibility checking and caching
-Will try to fake real time based on compile date/time if no RTC is found
-Currently supports: DS1307
 Chris Lüscher, July 2014
 */
 
@@ -127,19 +125,20 @@ uint32_t DateTime::unixtime(void) const {
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 
-void AqRTC::begin(const DateTime& compileTime){    
-    if(!isRunning()){
+void AqRTC::begin(const DateTime& compileTime){ 
+    lastTime = 0;
+    proven = false;    
+    if(!isRunning())
         adjust(compileTime);
-    } else {
-        lastTime = 0;
+    else
         if(!readTime())
             lastTime = compileTime.unixtime();
-    }
     lastSync = millis();
 }
 
 bool AqRTC::readTime(){
     uint32_t newTime;
+    uint32_t guessTime;
 
     Wire.beginTransmission(RTC_ADDRESS);
     Wire.write(0);  
@@ -154,12 +153,28 @@ bool AqRTC::readTime(){
             uint16_t y = bcd2bin(Wire.read());
 
             newTime = toUnixtime(y, m, d, hh, mm, ss);
-            if(newTime > lastTime){ // time did not suddenly start to go backward
+            // never read a time before, so let's live with what we have for now
+            if(!lastTime){
                 lastTime = newTime;
                 return true;
             }
+            guessTime = lastTime + ((millis() - lastSync)/1000);
+            // this read is within reasonable limits compared to the Arduino's estimate
+            if((guessTime + 5 > newTime) && (guessTime - 5 < newTime)){
+                proven = true;
+                lastTime = newTime; 
+                return true;
+            } else {
+                // if the last read was unproven, we rather belive the new one
+                // ((if it was proven, we implicitly believe the old one, but set it to be unproven))
+                if(!proven){
+                    lastTime = newTime; 
+                    return true;                    
+                }
+            }
         }
     }  
+    proven = false;
     return false;
 }
 
@@ -194,11 +209,12 @@ void AqRTC::adjust(const DateTime& dt) {
 DateTime AqRTC::now() {
     if((millis() - lastSync) >= SYNC_INTERVAL){
         if(!readTime())
-            lastTime += ((millis() - lastSync)/1000); //this is not the most precise way to do this, millis might get lost
+            lastTime += (millis() - lastSync)/1000; //this is not the most precise way to do this, millis might get lost
         lastSync = millis();                          //but heck, we are simulating time based on compile time
+        return DateTime(lastTime);
+    } else {
+        return DateTime(lastTime + ((millis() - lastSync)/1000));
     }
-
-    return DateTime(lastTime + ((millis() - lastSync)/1000));
 }
 
 AqRTC RTC = AqRTC();

@@ -29,17 +29,17 @@ void setup() {
   Serial.println("Flushing Pump 1.");
   pump1->setSpeed(255);
   pump1->run(FORWARD);
-  delay(60000);
+  delay(35000);
   pump1->run(RELEASE);
   Serial.println("Flushing Pump 2.");
   pump2->setSpeed(255);
   pump2->run(FORWARD);
-  delay(60000);
+  delay(35000);
   pump2->run(RELEASE);
   Serial.println("Flushing Pump 3.");
   pump3->setSpeed(255);
   pump3->run(FORWARD);
-  delay(60000);
+  delay(35000);
   pump3->run(RELEASE);
 }
 

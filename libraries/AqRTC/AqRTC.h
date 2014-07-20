@@ -1,7 +1,18 @@
 /*
 AqRTC: Arduino RTC library with safe i2c communication, plausibility checking and caching
-Fake real time based on compile date/time if no RTC is found
-Currently supports: DS1307
+Rationale: I've seen all kind of strange things happen on my I2C bus. I was able to resolve
+most of this, but who guarantees that all my I2C based RTC readings will always be 100% correct?
+Regular RTC libraries just accept blindly whatever they read from the RTC. This library does some
+advanced checking:
+- did the read succeed at all? (yes, this is not checked in the libraries I saw)
+- is the time I read within +/-5 seconds of what the Arduino would expect based on millis()?
+- did I read two correct times in succession?
+If any of these tests fail, this RTC will fall back to guessing the time based on millis(). 
+If there are no time reads at all, it will fall back to guessing based on compile time.
+If there's an RTC, but it's not running, it will be set to compile time. Compile time
+has to be passed to the constructor since libraries are not recompiled on a regular basis.
+To improve speed, this library only reads time every 30s.
+Currently supports: DS1307, DS3231
 Chris Lüscher, July 2014
 */
 
@@ -40,9 +51,10 @@ public:
     bool isRunning();
     DateTime now();
 protected:
-	bool readTime();
-	unsigned long lastSync;
-	uint32_t lastTime;
+    bool readTime();
+    unsigned long lastSync;
+    uint32_t lastTime;
+    bool proven; 
 };
 
 extern AqRTC RTC;

@@ -1,12 +1,12 @@
 /* 
 Sketch to demonstrate and test the AqRTC library
 Last test on Uno R3 with NO RTC installed:
-Sketch size: 7'484 Byte
-Free memory: 1499 Byte
+Sketch size: 7'654 Byte
+Free memory: 1498 Byte
 Loop ticks: 30800
 Last test on Uno R3 WITH RTC installed:
-Sketch size: 7'484 Byte
-Free memory: 1499 Byte
+Sketch size: 7'654 Byte
+Free memory: 1498 Byte
 Loop ticks: 30800
 */
 
