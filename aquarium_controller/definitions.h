@@ -47,8 +47,12 @@ Adafruit_DCMotor *coolingVents = AFMS.getMotor(4);
 // and do some reporting there
 const unsigned long updateInterval = 10000; // 10 secs
 
-// temperature measurement
-const byte temperaturePin = A0;
+// temperature measurement, OneWire digital temperature sensor on pin 10
+OneWire tempSensor(10);
+byte tempAddr[8];
+byte tempBuffer[2];
+byte tempStep = 0;
+unsigned long tempNextStep;
 float tempAverage = 20.0;
 
 // Atlas Scientific Sensors
@@ -56,8 +60,8 @@ const byte sensorBufferSize = 15;
 
 // pH measurement
 // measurements are stored as int (original number * 100) to save memory
-const byte pHRX=2;
-const byte pHTX=3;
+const byte pHRX=3;
+const byte pHTX=2;
 int pH = 700;
 SoftwareSerial pHSerial(pHRX, pHTX);
 byte pHSensorLength = 0;
@@ -65,8 +69,8 @@ char pHSensor[sensorBufferSize+1];
 
 // O2 measurement
 // measurements are stored as int (original number * 100) to save memory
-const byte O2RX=4;
-const byte O2TX=5;
+const byte O2RX=5;
+const byte O2TX=4;
 int O2 = 800;
 SoftwareSerial O2Serial(O2RX, O2TX);
 byte O2SensorLength = 0;

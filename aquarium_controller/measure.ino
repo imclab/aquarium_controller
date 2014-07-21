@@ -58,12 +58,22 @@ void measureO2(){
 ////////////////////////////////////////////////////////////////////////////////              
 // measures water temperature
 ////////////////////////////////////////////////////////////////////////////////
-void measureTemperature(){
-  // measure board voltage, used for reference later
-  float vcc=float(readVcc())/1000.0;
-  // measure temperature
-  // float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) - .5) * 100.0;  // TMP36
-  float temperature = (((analogRead(temperaturePin)/1024.0) * vcc) * 51.2) - 20.5128;  // Atlas Scientific ENV-TMP
-  // smoothen the temperature readings
-  tempAverage = tempAverage - ((tempAverage - temperature)/1000.0);
+void measureTemperature(){  
+  if(tempStep == 0){ //ask for a conversion first
+    tempSensor.reset();
+    tempSensor.select(tempAddr);
+    tempSensor.write(0x44, 0);
+    tempNextStep = millis() + 1000;
+    tempStep = 1;
+  } else {
+    if(millis() >= tempNextStep){
+      tempSensor.reset();
+      tempSensor.select(tempAddr);
+      tempSensor.write(0xBE);
+      for (byte i = 0; i < 2; i++)
+        tempBuffer[i] = tempSensor.read();  
+      tempAverage = (float)((tempBuffer[1] << 8) | tempBuffer[0]) / 16.0;
+      tempStep = 0;
+    }
+  }  
 }

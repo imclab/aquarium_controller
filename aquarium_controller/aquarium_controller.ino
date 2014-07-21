@@ -18,6 +18,7 @@
 
 #include <SoftwareSerial.h>
 #include <Wire.h>
+#include <OneWire.h>
 #include <Adafruit_MCP23017.h>
 #include <Adafruit_RGBLCDShield.h>
 #include <AqAlarms.h>
@@ -64,6 +65,11 @@ void setup(){
   pHSerial.print(F("L0\r"));
   pHSerial.listen();
   
+  // Temperature
+  tempSensor.target_search(0x28); //DS18B20 Temperature Sensor
+  if(!tempSensor.search(tempAddr))
+     Serial.println(F("ST No temp sensor found."));
+ 
   // Timer to update serial, sensor calibration, fan speed, switch states
   updateTimer.set(updateInterval, update, true); 
   
